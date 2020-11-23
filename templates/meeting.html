@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+{% block content %}
+{% if joined == True %}
+<div class="container" id="chat_container">
+
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    You have not joined any meeting. To join one click <a href="/joinmeeting" class="alert-link">here</a>.
+</div>
+{% endif %}
+{% endblock %}

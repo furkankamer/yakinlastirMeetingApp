@@ -41,6 +41,7 @@ class User(UserMixin):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+        self.joined = False
         self.active = True
         self.is_admin = False
 
@@ -93,6 +94,10 @@ def logout():
     if current_user.is_authenticated:
         logout_user()
     return redirect("/")
+
+@app.route("/meeting", methods = ['GET'])
+def meeting():
+    return render_template("meeting.html", joined = current_user.joined)
 
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():
