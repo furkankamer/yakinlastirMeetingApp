@@ -1,0 +1,8 @@
+{% extends "main.html" %}
+{% block content %}
+<form method="POST" action="/signup">
+  Username: <input class="" type="text" name="UserName" value="" required="required"><br>
+  Password: <input type="password" name="Password" value="" required="required"><br>
+  <input style="font-size:16px;" type="submit" class="btn btn-outline-primary" value="Sign Up">
+</form>
+{% endblock %}

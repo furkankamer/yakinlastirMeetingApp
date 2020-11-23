@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html>
-    <head>
-	<link rel="shortcut icon" href="/favicon.ico">
-	<title>Yakinlastir</title>
-    </head>
-    <body>
-		Yakinlastir is a meeting up that you can share messages, files, screen etc.
-    </body>
-</html>
+{% extends "main.html" %}
+{% block content %}
+    
+{% if current_user.is_authenticated %}
+{% else %}
+    <form method="POST" action="/signin">
+      Username: <input class="" type="text" name="UserName" value="" required="required"><br>
+      Password: <input type="password" name="Password" value="" required="required"><br>
+      <input style="font-size:16px;" type="submit" class="btn btn-outline-primary" value="Sign In">
+    </form>
+{% endif %}
+{% endblock %}
