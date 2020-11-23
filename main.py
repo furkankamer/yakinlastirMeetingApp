@@ -94,6 +94,14 @@ def logout():
         logout_user()
     return redirect("/")
 
+@app.route("/newmeeting",methods = ['GET'])
+def newMeeting():
+    return render_template("newmeeting.html")
+
+@app.route("/joinmeeting",methods = ['GET'])
+def joinMeeting():
+    return render_template("joinmeeting.html")
+
 @app.route("/signup",methods = ['GET'])
 def signupPage():
     return render_template("signup.html")

@@ -9,6 +9,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        input{
+            max-width: 280px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-sm bg-light">
@@ -17,6 +22,12 @@
             <a class="nav-link" href="\">Yakinlastir</a>
           </li>
           {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="/newmeeting">New Meeting</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/joinmeeting">Join Meeting</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="/logout">Logout</a>
           </li>
@@ -28,7 +39,7 @@
         </ul>
       </nav>
       <br>
-  Yakinlastir is a meeting up that you can share messages, files, screen etc.
+  Yakinlastir is a meeting app that you can share messages, files, screen etc.
 
 {% if message %}
 <div class="notification is-info">{{ message }}</div>

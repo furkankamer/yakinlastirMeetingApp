@@ -1,8 +1,22 @@
 {% extends "main.html" %}
 {% block content %}
 <form method="POST" action="/signup">
-  Username: <input class="" type="text" name="UserName" value="" required="required"><br>
-  Password: <input type="password" name="Password" value="" required="required"><br>
-  <input style="font-size:16px;" type="submit" class="btn btn-outline-primary" value="Sign Up">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="username">Username:</label> 
+        <div class="col-sm-10">
+            <input id="username" class="form-control" type="text" name="UserName" placeholder="Enter a username" required="required">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="password">Password:</label>
+        <div class="col-sm-10">
+            <input id="password" class="form-control" type="password" name="Password" required="required"><br>
+        </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-sm-10">
+        <input style="font-size:16px;" type="submit" class="btn btn-outline-primary" value="Sign Up">
+      </div>
+    </div>
 </form>
 {% endblock %}
