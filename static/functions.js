@@ -9,12 +9,9 @@ function leaveMeeting(){
 function connectToRoom(){
     $(document).ready(function(){
         socket = io.connect('http://' + document.domain + ':' + location.port + '/');
-        socket.on('connect', function() {
-            socket.emit('joined');
-        });
-        socket.on('status', function(data) {
-            alert(data);
-        });
+        socket.on('connect', () => socket.emit('joined'));
+        socket.on('status', message => alert(message));
+        socket.on('leave', message => alert(message));
         socket.on('receive', message => {
             document.getElementById("chat").insertAdjacentHTML("beforeend",
                     `<p>${message}</p>`);
@@ -24,6 +21,12 @@ function connectToRoom(){
             if(message.value)
                 socket.emit('message',message.value);
             message.value = "";
-        })
+        });
+        document.getElementById("leaveBtn").addEventListener('click', () => {
+            if(confirm("Are you sure?")){
+                socket.emit("leaveMeeting");
+                location.href = "/";
+            }
+        });
     });
 }

@@ -30,6 +30,15 @@ def joined():
 def message(data):
     emit("receive", current_user.username + ":" + data, room = session["meetingId"])
 
+@socketio.on("leaveMeeting")
+def leavemeeting():
+    roomid = session['meetingId']
+    leave_room(session["meetingId"])
+    session["joined"] = False
+    session["meetingId"] = -1
+    emit('leave',current_user.username + ": has left meeting",room = roomid)
+    return redirect("/meeting")
+
 def sql_returner(query,fetch):
     with psycopg2.connect(url) as connection:
          with connection.cursor() as cursor:
@@ -70,13 +79,6 @@ def get_user(nick):
     for row in user:
         return User(nick,row[0])
 
-@login_required
-@app.route("/leavemeeting")
-def leavemeeting():
-    leave_room(session["meetingId"])
-    session["joined"] = False
-    session["meetingId"] = -1
-    return redirect("/meeting")
 
 @login_required
 @app.route("/joinmeeting", methods = ['POST'])
