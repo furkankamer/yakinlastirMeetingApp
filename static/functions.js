@@ -30,3 +30,22 @@ function connectToRoom(){
         });
     });
 }
+function toggleChat(){
+    let chatbutton = document.getElementById("chatBtn");
+    let chatdiv = document.getElementById("chatdiv");
+    if(chatbutton.innerText.includes(">")){
+        chatdiv.style.display = "block";
+        chatbutton.innerText = "Hide Chat v";
+    }
+    else{
+        chatdiv.style.display = "none";
+        chatbutton.innerText = "Show Chat >";
+    }
+}
+function openForm() {
+    document.getElementById("myForm").style.display = "block";
+  }
+  
+  function closeForm() {
+    document.getElementById("myForm").style.display = "none";
+  }
