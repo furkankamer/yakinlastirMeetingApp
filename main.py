@@ -73,8 +73,7 @@ def get_user(nick):
 @login_required
 @app.route("/leavemeeting")
 def leavemeeting():
-    print(session["joined"])
-    print(session["meetingId"])
+    leave_room(session["meetingId"])
     session["joined"] = False
     session["meetingId"] = -1
     return redirect("/meeting")
