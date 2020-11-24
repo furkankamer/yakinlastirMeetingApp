@@ -28,7 +28,10 @@ def joined():
 
 @socketio.on("message")
 def message(data):
-    emit("receive", current_user.username + ":" + data, room = session["meetingId"])
+    if data["type"] == "file":
+        emit("filereceive", data, room = session["meetingId"])
+    else:
+        emit("receive", current_user.username + ":" + data["content"], room = session["meetingId"])
 
 @socketio.on("leaveMeeting")
 def leavemeeting():

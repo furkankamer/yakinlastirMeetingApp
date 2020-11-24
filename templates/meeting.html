@@ -80,11 +80,19 @@
 <div class="chat-popup" id="myForm">
   <form action="/action_page.php" class="form-container">
     <h1>Chat</h1>
-    <div class="container border border-secondary" style="float: left; color: oldlace; background-color: gray; height: 150px; overflow: auto;" id="chat">
+    <div class="container border border-secondary" style="float: left; color: oldlace; background-color:indigo; height: 150px; overflow: auto;" id="chat">
     
     </div>
     <label for="msg"><b>Message</b></label>
     <textarea placeholder="Type message.." id="message"></textarea>
+    <label for="file">
+      <div class="input-group mb-3">
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" style="display:inline-block;" id="inputGroupFile01" name="inputGroupFile01" multiple/>
+            <label class="custom-file-label" for="inputGroupFile01">Select File</label>
+        </div>
+    </div>
+    </label>
     <button type="button" id="sendBtn" class="btn">Send</button>
     <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
   </form>
