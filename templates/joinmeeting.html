@@ -1,3 +1,24 @@
 {% extends "main.html" %}
 {% block content %}
+{% if joined %}
+
+<div class="alert alert-info" role="alert">
+    You have already joined a meeting. To leave it click <a style="color:red;" onclick="leaveMeeting()" class="alert-link">here</a>.
+</div>
+
+{% else %}
+<form method="POST" action="/joinmeeting">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="Id">Meeting Id:</label> 
+        <div class="col-sm-10">
+            <input id="Id" class="form-control" type="number" name="Id" placeholder="Enter a meeting id" required="required">
+        </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-sm-10">
+        <input style="font-size:16px;" type="submit" class="btn btn-outline-primary" value="Join">
+      </div>
+    </div>
+</form>
+{% endif %}
 {% endblock %}

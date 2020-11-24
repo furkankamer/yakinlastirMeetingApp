@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask,flash, request, jsonify, render_template,Response,redirect,send_from_directory
+from flask import Flask,flash, request, jsonify, render_template,Response,redirect,send_from_directory, session
 import os
 import time
 from datetime import datetime
@@ -8,7 +8,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_cors import CORS, cross_origin
 import psycopg2
 import pytz
-from flask_socketio import SocketIO, emit
+import random
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
 app = Flask(__name__)
@@ -17,7 +18,17 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.secret_key = b'\xdd\xd6]j\xb0\xcc\xe3mNF{\x14\xaf\xa7\xb9\x18'
 lm = LoginManager()
+meetingIds = range(5000)
+meetingCount = 0
 
+@socketio.on("joined")
+def joined():
+    join_room(session["meetingId"])
+    emit('status', current_user.username + 'has joined to meeting', room = session["meetingId"])
+
+@socketio.on("message")
+def message(data):
+    emit("receive", current_user.username + ":" + data, room = session["meetingId"])
 
 def sql_returner(query,fetch):
     with psycopg2.connect(url) as connection:
@@ -41,7 +52,6 @@ class User(UserMixin):
     def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.joined = False
         self.active = True
         self.is_admin = False
 
@@ -60,6 +70,24 @@ def get_user(nick):
     for row in user:
         return User(nick,row[0])
 
+@login_required
+@app.route("/leavemeeting")
+def leavemeeting():
+    print(session["joined"])
+    print(session["meetingId"])
+    session["joined"] = False
+    session["meetingId"] = -1
+    return redirect("/meeting")
+
+@login_required
+@app.route("/joinmeeting", methods = ['POST'])
+def joinmeetingPost():
+    id = request.form["Id"]
+    session["meetingId"] = int(id)
+    session["joined"] = True
+    return redirect("/meeting")
+
+
 @cross_origin()
 @app.route("/signin", methods = ['POST'])
 def signin():
@@ -70,6 +98,8 @@ def signin():
         password1 = user.password
         if pbkdf2_sha256.verify(password, password1):
             login_user(user)
+            session["joined"] = False
+            session["meetingId"] = -1
         else:
             flash("Invalid Credentials")
         return redirect("/")
@@ -95,13 +125,27 @@ def logout():
         logout_user()
     return redirect("/")
 
+@login_required
+@app.route("/meeting", methods = ['POST'])
+def createMeeting():
+    setattr(current_user,'joined',True)
+    current_user.joined = True
+    global meetingCount
+    meetingName = request.form["Name"]
+    meetingPassword = request.form["Password"]
+    session["meetingId"] = meetingIds[meetingCount]
+    session["joined"] = True
+    meetingCount += 1
+    return redirect("/meeting")
+
+
 @app.route("/meeting", methods = ['GET'])
 def meeting():
-    return render_template("meeting.html", joined = current_user.joined)
+    return render_template("meeting.html", joined = session["joined"], meetingId = session["meetingId"])
 
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():
-    return render_template("newmeeting.html")
+    return render_template("newmeeting.html", joined = session["joined"])
 
 @app.route("/joinmeeting",methods = ['GET'])
 def joinMeeting():
@@ -118,6 +162,9 @@ def favicon():
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        session["joined"] = False
+        session["meetingId"] = -1
     return render_template("index.html")
 
 lm.init_app(app)
