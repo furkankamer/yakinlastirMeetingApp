@@ -97,6 +97,15 @@
     <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
   </form>
 </div>
+<div id="container">
+  <canvas id="canvasOutput" style="display: none;"></canvas>
+  <video autoplay="true" id="videoElement" style="display: none;"></video>
+</div>
+<label class="checkbox-inline-lg"><input type="checkbox" id="start">Start Sharing</label>
+<label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stop" disabled>Stop Sharing</label><br />
+<div class = 'video'>
+  <img id="image">
+</div>
 <p>
     Meeting Id = {{meetingId}}
 </p>

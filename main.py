@@ -10,9 +10,11 @@ import psycopg2
 import pytz
 import random
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from engineio.payload import Payload
 
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
 app = Flask(__name__)
+Payload.max_decode_packets = 500
 socketio = SocketIO(app,cors_allowed_origins="*")
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -21,10 +23,18 @@ lm = LoginManager()
 meetingIds = range(5000)
 meetingCount = 0
 
+@socketio.on('image')
+def image(data_image):
+    print("image send")
+    b64_src = 'data:image/jpg;base64,'
+    stringData = b64_src + data_image
+    emit('sharedData',{"data": stringData, "username": session["userName"]}, room = session["meetingId"])
+
 @socketio.on("joined")
 def joined():
     join_room(session["meetingId"])
-    emit('status', current_user.username + 'has joined to meeting', room = session["meetingId"])
+    session["userName"] = current_user.username
+    emit('status', current_user.username + ' has joined to meeting', room = session["meetingId"])
 
 @socketio.on("message")
 def message(data):

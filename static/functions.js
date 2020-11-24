@@ -7,10 +7,29 @@ function leaveMeeting(){
 }
 
 function connectToRoom(){
+    const FPS = 22;
+    var src;
+    var dst;
+    var cap;
+    var shareInterval;
     $(document).ready(function(){
+        const video = document.querySelector("#videoElement");
+         video.width = 250; 
+         video.height = 180;
+         setTimeout(() => {
+            src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+            dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+            cap = new cv.VideoCapture(video);
+            alert("camera is ready");
+         }, 10000);
         socket = io.connect('http://' + document.domain + ':' + location.port + '/');
         socket.on('connect', () => socket.emit('joined'));
-        socket.on('status', message => alert(message));
+        socket.on('status', message => {
+            alert(message);
+            let img = document.createElement("img");
+            img.id = message.split(" ")[0];
+            document.getElementsByClassName("video")[0].appendChild(img);
+        });
         socket.on('leave', message => alert(message));
         socket.on('receive', message => {
             document.getElementById("chat").insertAdjacentHTML("beforeend",
@@ -22,6 +41,10 @@ function connectToRoom(){
                     document.getElementById("chat").insertAdjacentHTML("beforeend",`
                     <embed src="${file["content"]}" 
                     type="${file["innertype"]}"   height="50" width="220">`);
+        });
+        socket.on('sharedData', function(obj){
+            console.log("image received");
+            document.getElementById(obj["username"]).src = obj["data"];
         });
         document.getElementById("sendBtn").addEventListener('click', async e => {
             let messageElement = document.getElementById("message");
@@ -49,6 +72,41 @@ function connectToRoom(){
             var nextSibling = e.target.nextElementSibling
             nextSibling.innerText = fileName
         })
+
+        document.getElementById("start").addEventListener("change", e => {
+            if(e.target.checked){
+                document.getElementById('image').style.display = "block";
+                if (navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                    .catch(function (err0r) {
+                        console.log(err0r)
+                        console.log("Something went wrong!");
+                    });
+                }
+            
+                shareInterval = setInterval(() => {
+                    cap.read(src);
+                    cv.cvtColor(src, dst, cv.COLOR_RGBA2RGB);
+                    cv.imshow('canvasOutput', dst);
+                    var type = "image/png"
+                    var data = document.getElementById("canvasOutput").toDataURL(type);
+                    data = data.replace('data:' + type + ';base64,', ''); 
+                    socket.emit('image', data);
+                }, 1000/FPS);
+                document.getElementById("stop").checked = false;
+            }
+        });
+        document.getElementById("stop").addEventListener("change", e => {
+            if(checkbox.checked){
+                clearInterval(shareInterval);
+                video.pause();
+                document.getElementById('image').style.display = "none";
+            }
+        });
     });
 }
 function toggleChat(){
