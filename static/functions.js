@@ -22,7 +22,7 @@ function connectToRoom(){
             cap = new cv.VideoCapture(video);
             alert("camera is ready");
          }, 10000);
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/');
+        socket = io.connect('https://' + document.domain + ':' + location.port + '/');
         socket.on('connect', () => socket.emit('joined'));
         socket.on('status', message => {
             alert(message);
