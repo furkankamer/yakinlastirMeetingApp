@@ -24,6 +24,14 @@ lm = LoginManager()
 meetingIds = range(5000)
 meetingCount = 0
 
+@socketio.on("unshareScreen")
+def unshareScreenData():
+    emit("unsharescreen",room = session["meetingId"])
+
+@socketio.on('shareScreen')
+def screenData(data):
+    emit('sendScreen',data,room = session["meetingId"])
+
 @socketio.on('unshare')
 def unshare(data):
     emit('unshare',data,room = session["meetingId"])
