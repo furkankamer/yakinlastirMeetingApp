@@ -100,7 +100,7 @@ function connectToRoom(){
                     cv.cvtColor(src, dst, cv.COLOR_RGBA2RGB);
                     cv.imshow('canvasOutput', dst);
                     var type = "image/jpeg"
-                    var data = document.getElementById("canvasOutput").toDataURL(type,0.6);
+                    var data = document.getElementById("canvasOutput").toDataURL(type,0.2);
                     data = data.replace('data:' + type + ';base64,', ''); 
                     socket.emit('image', data);
                 }, 1000/FPS);
