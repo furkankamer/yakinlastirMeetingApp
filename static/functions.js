@@ -12,14 +12,17 @@ function connectToRoom(){
     var dst;
     var cap;
     var shareInterval;
+    var audioInterval;
     $(document).ready(function(){
         const video = document.querySelector("#videoElement");
+        const audio = document.querySelector("#audioElement");
          video.width = 250; 
          video.height = 180;
          setTimeout(() => {
             src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
             cap = new cv.VideoCapture(video);
+            document.getElementById("start").disabled = false;
             alert("camera is ready");
          }, 5000);
         socket = io.connect( location.protocol + '//' + document.domain + ':' + location.port + '/',{transports: ['websocket']});
@@ -42,6 +45,12 @@ function connectToRoom(){
                     <embed src="${file["content"]}" 
                     type="${file["innertype"]}"   height="50" width="220">`);
         });
+        socket.on('unshare',user => document.getElementById(user).style.display = 'none');
+        socket.on('playaudio', data => {
+            audio.src = data;
+            audio.play();
+            console.log("audio received");
+        });
         socket.on('sharedData', function(obj){
             console.log("image received");
             if(!document.getElementById(obj["username"])){
@@ -51,6 +60,7 @@ function connectToRoom(){
                 document.getElementsByClassName("video")[0].appendChild(img);
                 return;
             }
+            document.getElementById(obj["username"]).style.display = "block";
             document.getElementById(obj["username"]).src = obj["data"];
         });
         document.getElementById("sendBtn").addEventListener('click', async e => {
@@ -74,23 +84,42 @@ function connectToRoom(){
                 location.href = "/";
             }
         });
-        document.querySelector('.custom-file-input').addEventListener('change', function (e) {
+        document.querySelector('.custom-file-input').addEventListener('change', e => {
             var fileName = document.getElementById("inputGroupFile01").files[0].name;
             var nextSibling = e.target.nextElementSibling
             nextSibling.innerText = fileName
-        })
+        });
 
         document.getElementById("start").addEventListener("change", e => {
             if(e.target.checked){
                 document.getElementById('image').style.display = "block";
                 if (navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function (stream) {
+                    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    .then(stream => {
                         video.srcObject = stream;
-                        video.play();
+                        video.play().then(() => {
+                            var mediaRecorder = new MediaRecorder(stream);
+                            mediaRecorder.onstart = () => {
+                                this.chunks = [];
+                            };
+                            mediaRecorder.ondataavailable = e => {
+                                this.chunks.push(e.data);
+                            };
+                            mediaRecorder.onstop = () => {
+                                var blob = new Blob(this.chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                                var reader = new FileReader();
+                                reader.readAsDataURL(blob);
+                                reader.onloadend = () => socket.emit('audio',reader.result);
+                            };
+                            mediaRecorder.start();
+                            audioInterval = setInterval(() => {
+                                mediaRecorder.stop();
+                                mediaRecorder.start();
+                            }, 1000);
+                        });
                     })
-                    .catch(function (err0r) {
-                        console.log(err0r)
+                    .catch(error => {
+                        console.error(error)
                         console.log("Something went wrong!");
                     });
                 }
@@ -107,10 +136,13 @@ function connectToRoom(){
             }
         });
         document.getElementById("stop").addEventListener("change", e => {
-            if(checkbox.checked){
+            if(e.target.checked){
                 clearInterval(shareInterval);
+                clearInterval(audioInterval);
                 video.pause();
                 document.getElementById('image').style.display = "none";
+                document.getElementById('start').checked = false;
+                socket.emit('unshare',username);
             }
         });
     });

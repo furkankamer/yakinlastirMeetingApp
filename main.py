@@ -24,6 +24,14 @@ lm = LoginManager()
 meetingIds = range(5000)
 meetingCount = 0
 
+@socketio.on('unshare')
+def unshare(data):
+    emit('unshare',data,room = session["meetingId"])
+
+@socketio.on('audio')
+def receivedAudio(data):
+    emit('playaudio',data,room = session["meetingId"])
+
 @socketio.on('image')
 def image(data_image):
     emit('sharedData',{"data": data_image, "username": session["userName"]}, room = session["meetingId"])
@@ -153,7 +161,7 @@ def createMeeting():
 
 @app.route("/meeting", methods = ['GET'])
 def meeting():
-    return render_template("meeting.html", joined = session["joined"], meetingId = session["meetingId"])
+    return render_template("meeting.html", joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
 
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():

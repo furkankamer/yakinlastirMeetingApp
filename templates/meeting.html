@@ -2,6 +2,7 @@
 {% block content %}
 {% if joined %}
 <script>
+    var username = '{{user}}';
     connectToRoom();
 </script>
 <style>
@@ -100,9 +101,10 @@
 <div id="container">
   <canvas id="canvasOutput" style="display: none;"></canvas>
   <video autoplay="true" id="videoElement" style="display: none;"></video>
+  <audio style="display: none;" id="audioElement"></audio>
 </div>
-<label class="checkbox-inline-lg"><input type="checkbox" id="start">Start Sharing</label>
-<label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stop" disabled>Stop Sharing</label><br />
+<label class="checkbox-inline-lg"><input type="checkbox" id="start" disabled>Start Sharing</label>
+<label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stop">Stop Sharing</label><br />
 <div class = 'video'>
   <img id="image">
 </div>
