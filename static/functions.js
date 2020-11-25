@@ -7,7 +7,7 @@ function leaveMeeting(){
 }
 
 function connectToRoom(){
-    const FPS = 22;
+    const FPS = 25;
     var src;
     var dst;
     var cap;
