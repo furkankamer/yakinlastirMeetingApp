@@ -44,6 +44,13 @@ function connectToRoom(){
         });
         socket.on('sharedData', function(obj){
             console.log("image received");
+            if(!document.getElementById(obj["username"])){
+                let img = document.createElement("img");
+                img.id = obj["username"];
+                img.src = obj["data"];
+                document.getElementsByClassName("video")[0].appendChild(img);
+                return;
+            }
             document.getElementById(obj["username"]).src = obj["data"];
         });
         document.getElementById("sendBtn").addEventListener('click', async e => {
@@ -92,8 +99,8 @@ function connectToRoom(){
                     cap.read(src);
                     cv.cvtColor(src, dst, cv.COLOR_RGBA2RGB);
                     cv.imshow('canvasOutput', dst);
-                    var type = "image/png"
-                    var data = document.getElementById("canvasOutput").toDataURL(type);
+                    var type = "image/jpeg"
+                    var data = document.getElementById("canvasOutput").toDataURL(type,0.6);
                     data = data.replace('data:' + type + ';base64,', ''); 
                     socket.emit('image', data);
                 }, 1000/FPS);
