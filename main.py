@@ -16,8 +16,8 @@ from engineio.payload import Payload
 
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
 app = Flask(__name__)
-Payload.max_decode_packets = 500
-socketio = SocketIO(app,cors_allowed_origins="*",logger = True)
+Payload.max_decode_packets = 2500
+socketio = SocketIO(app,cors_allowed_origins="*",logger = True,async_mode="eventlet")
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.secret_key = b'\xdd\xd6]j\xb0\xcc\xe3mNF{\x14\xaf\xa7\xb9\x18'
@@ -27,10 +27,7 @@ meetingCount = 0
 
 @socketio.on('image')
 def image(data_image):
-    print("image send")
-    b64_src = 'data:image/jpg;base64,'
-    stringData = b64_src + data_image
-    emit('sharedData',{"data": stringData, "username": session["userName"]}, room = session["meetingId"])
+    emit('sharedData',{"data": data_image, "username": session["userName"]}, room = session["meetingId"])
 
 @socketio.on("joined")
 def joined():

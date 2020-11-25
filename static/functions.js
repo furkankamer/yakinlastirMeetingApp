@@ -21,8 +21,8 @@ function connectToRoom(){
             dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
             cap = new cv.VideoCapture(video);
             alert("camera is ready");
-         }, 10000);
-        socket = io.connect('https://' + document.domain + ':' + location.port + '/');
+         }, 5000);
+        socket = io.connect( location.protocol + '//' + document.domain + ':' + location.port + '/',{transports: ['websocket']});
         socket.on('connect', () => socket.emit('joined'));
         socket.on('status', message => {
             alert(message);
@@ -101,7 +101,6 @@ function connectToRoom(){
                     cv.imshow('canvasOutput', dst);
                     var type = "image/jpeg"
                     var data = document.getElementById("canvasOutput").toDataURL(type,0.2);
-                    data = data.replace('data:' + type + ';base64,', ''); 
                     socket.emit('image', data);
                 }, 1000/FPS);
                 document.getElementById("stop").checked = false;
