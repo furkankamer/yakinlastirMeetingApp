@@ -3,7 +3,7 @@ function leaveMeeting(){
         fetch("/leavemeeting")
             .then(response => response.text)
             .then(() => location.href = "/")
-            .catch(error => alert("an error occured"));
+            .catch(() => alert("an error occured"));
 }
 
 function connectToRoom(){
