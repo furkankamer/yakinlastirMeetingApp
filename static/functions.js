@@ -26,8 +26,8 @@ function connectToRoom(){
         const screen = document.getElementById("videoElementScreen");
          video.width = 250; 
          video.height = 180;
-         screen.width = 500;
-         screen.height = 360;
+         screen.width = 750;
+         screen.height = 540;
          setTimeout(() => {
             src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
             dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
@@ -61,7 +61,7 @@ function connectToRoom(){
         });
         socket.on('unshare',user => document.getElementById(user).style.display = 'none');
         socket.on('unsharescreen', () => {
-            document.getElementById("screenImg").display = "none";
+            document.getElementById("screenImg").style.display = "none";
             document.getElementById("screenImg").src = "";
             isSharingScreen = false;
         })
@@ -71,7 +71,9 @@ function connectToRoom(){
             console.log("audio received");
         });
         socket.on('sendScreen', data => {
+            console.log("screen got");
             document.getElementById("screenImg").src = data;
+            document.getElementById("screenImg").style.display = "block";
             isSharingScreen = true;
         });
         socket.on('sharedData', function(obj){
@@ -120,7 +122,6 @@ function connectToRoom(){
                     return;
                 }
                 document.getElementById("screenImg").style.display = "block";
-                if(navigator.mediaDevices.getDisplayMedia(displayMediaOptions)){
                     navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
                         .then(stream =>  {
                             screen.srcObject = stream;
@@ -135,14 +136,13 @@ function connectToRoom(){
                             document.getElementById("stopScreen").checked = false;
                         })
                         .catch(() => console.log("An error occured."));
-                }
             }
         });
         document.getElementById("stopScreen").addEventListener("change", e => {
             if(e.target.checked){
                 socket.emit("unshareScreen");
                 document.getElementById("screenImg").style.display = "none";
-                document.getElementById("stopScreen").checked = false;
+                document.getElementById("startScreen").checked = false;
                 clearInterval(shareIntervalScreen);
             }
         });
