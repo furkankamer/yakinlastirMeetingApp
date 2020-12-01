@@ -18,8 +18,10 @@ csp = {
     'default-src': [
         '\'self\'',
         '*.googleapis.com',
+    ],
+    'style-src': [
         '*.bootstrapcdn.com',
-        ''
+        '*.googleapis.com',
     ]
 }
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
