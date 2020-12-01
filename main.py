@@ -32,6 +32,7 @@ csp = {
     ],
     'script-src': [
         "'self'",
+        "'unsafe-eval'",
         '*.bootstrapcdn.com',
         '\'unsafe-inline\'',
         '*.googleapis.com',
