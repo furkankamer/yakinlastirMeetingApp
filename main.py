@@ -19,18 +19,21 @@ csp = {
         '\'self\'',
         '*.googleapis.com',
         '*.cloudflare.com',
-        '*.bootstrapcdn.com'
+        '*.bootstrapcdn.com',
+        '*.herokuapp.com'
     ],
     'style-src': [
         "'self'",
         '*.bootstrapcdn.com',
         '*.googleapis.com',
+        '*.herokuapp.com'
     ],
     'script-src': [
         "'self'",
         '*.bootstrapcdn.com',
         '*.googleapis.com',
         '*.cloudflare.com',
+        '*.herokuapp.com'
     ]
 }
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
