@@ -22,6 +22,7 @@ csp = {
         '*.bootstrapcdn.com'
     ],
     'style-src': [
+        "'self'",
         '*.bootstrapcdn.com',
         '*.googleapis.com',
     ]
