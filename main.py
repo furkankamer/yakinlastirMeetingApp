@@ -13,9 +13,11 @@ import pytz
 import random
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from engineio.payload import Payload
+from flask_talisman import Talisman
 
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
 app = Flask(__name__)
+Talisman(app)
 socketio = SocketIO(app,cors_allowed_origins="*",async_mode="eventlet")
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
