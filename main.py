@@ -18,6 +18,7 @@ csp = {
     'default-src': [
         '\'self\'',
         '*.googleapis.com',
+        '*.cloudflare.com'
     ],
     'style-src': [
         '*.bootstrapcdn.com',
