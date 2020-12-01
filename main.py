@@ -20,17 +20,20 @@ csp = {
         '*.googleapis.com',
         '*.cloudflare.com',
         '*.bootstrapcdn.com',
+        '\'unsafe-inline\'',
         '*.herokuapp.com'
     ],
     'style-src': [
         "'self'",
         '*.bootstrapcdn.com',
         '*.googleapis.com',
+        '\'unsafe-inline\'',
         '*.herokuapp.com'
     ],
     'script-src': [
         "'self'",
         '*.bootstrapcdn.com',
+        '\'unsafe-inline\'',
         '*.googleapis.com',
         '*.cloudflare.com',
         '*.herokuapp.com'
