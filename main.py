@@ -23,6 +23,7 @@ app.secret_key = b'\xdd\xd6]j\xb0\xcc\xe3mNF{\x14\xaf\xa7\xb9\x18'
 lm = LoginManager()
 meetingIds = range(5000)
 meetingCount = 0
+rooms = {}
 
 @socketio.on("unshareScreen")
 def unshareScreenData():
@@ -39,6 +40,14 @@ def unshare(data):
 @socketio.on('audio')
 def receivedAudio(data):
     emit('playaudio',data,room = session["meetingId"])
+
+@socketio.on('unsharevideo')
+def unshareVideo(data):
+    emit('unsharevideo',data,room = session["meetingId"])
+
+@socketio.on('video')
+def receiveVideo(data):
+    emit('video',{"data": data, "username": session["userName"]},room = session["meetingId"])
 
 @socketio.on('image')
 def image(data_image):
@@ -110,7 +119,11 @@ def get_user(nick):
 @login_required
 @app.route("/joinmeeting", methods = ['POST'])
 def joinmeetingPost():
-    id = request.form["Id"]
+    id = int(request.form["Id"])
+    meetingPassword = request.form["Password"]
+    if id in rooms and rooms[id] != meetingPassword:
+        return redirect("/joinmeeting")
+    rooms[id] = meetingPassword
     session["meetingId"] = int(id)
     session["joined"] = True
     return redirect("/meeting")
@@ -159,11 +172,14 @@ def createMeeting():
     setattr(current_user,'joined',True)
     current_user.joined = True
     global meetingCount
+    while meetingCount in rooms:
+        meetingCount += 1
     meetingName = request.form["Name"]
     meetingPassword = request.form["Password"]
     session["meetingId"] = meetingIds[meetingCount]
     session["joined"] = True
     meetingCount += 1
+    rooms[session["meetingId"]] = meetingPassword
     return redirect("/meeting")
 
 

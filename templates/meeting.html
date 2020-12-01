@@ -111,9 +111,12 @@
 <label class="checkbox-inline-lg"><input type="checkbox" id="stopScreen">Stop Screen Sharing</label>
 <label class="checkbox-inline-lg"><input type="checkbox" id="start" disabled>Start Webcam Sharing</label>
 <label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stop">Stop Webcam Sharing</label><br />
+<label class="checkbox-inline-lg"><input type="checkbox" id="startVideo" disabled>Start Webcam(Video) Sharing</label>
+<label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stopVideo">Stop Webcam(Video) Sharing</label><br />
 <div class = 'video'>
   <img id="image">
   <img id="screenImg" width="750" height="540" style="display: none;">
+  <video id="mainVideo" autoplay></video>
 </div>
 <p>
     Meeting Id = {{meetingId}}

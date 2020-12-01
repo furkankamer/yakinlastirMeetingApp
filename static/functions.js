@@ -20,6 +20,8 @@ function connectToRoom(){
     var shareInterval;
     var audioInterval;
     var shareIntervalScreen;
+    var videoInterval;
+    var mainStream = new MediaStream();
     $(document).ready(function(){
         const video = document.querySelector("#videoElement");
         const audio = document.querySelector("#audioElement");
@@ -37,6 +39,7 @@ function connectToRoom(){
             capScreen = new cv.VideoCapture(screen);
             document.getElementById("start").disabled = false;
             document.getElementById("startScreen").disabled = false;
+            document.getElementById("startVideo").disabled = false;
             alert("camera is ready");
          }, 5000);
         socket = io.connect( location.protocol + '//' + document.domain + ':' + location.port + '/',{transports: ['websocket']});
@@ -59,12 +62,28 @@ function connectToRoom(){
                     <embed src="${file["content"]}" 
                     type="${file["innertype"]}"   height="50" width="220">`);
         });
-        socket.on('unshare',user => document.getElementById(user).style.display = 'none');
+        socket.on('unshare',user => document.getElementById(user).remove());
         socket.on('unsharescreen', () => {
             document.getElementById("screenImg").style.display = "none";
             document.getElementById("screenImg").src = "";
             isSharingScreen = false;
+        });
+        socket.on('unsharevideo', id => {
+            document.getElementById(id+"video").remove();
         })
+        socket.on('video', obj => {
+            console.log("video received");
+            if(!document.getElementById(obj["username"]+"video")){
+                let videoShared = document.createElement("video");
+                videoShared.autoplay = true;
+                videoShared.id = obj["username"]+"video";
+                videoShared.src = obj["data"];
+                document.getElementsByClassName("video")[0].appendChild(videoShared);
+                return;
+            }
+            document.getElementById(obj["username"]+"video").style.display = "block";
+            document.getElementById(obj["username"]+"video").src = obj["data"];
+        });
         socket.on('playaudio', data => {
             audio.src = data;
             audio.play();
@@ -114,6 +133,41 @@ function connectToRoom(){
             var nextSibling = e.target.nextElementSibling
             nextSibling.innerText = fileName
         });
+        document.getElementById("startVideo").addEventListener("change", e => {
+            if(e.target.checked){
+                document.getElementById("stopVideo").checked = false;
+                if (navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                        .then(stream => {
+                            console.log(stream);
+                            var mediaRecorder = new MediaRecorder(stream);
+                            mediaRecorder.onstart = () => {
+                                this.chunks = [];
+                            };
+                            mediaRecorder.ondataavailable = e => {
+                                this.chunks.push(e.data);
+                            };
+                            mediaRecorder.onstop = () => {
+                                var blob = new Blob(this.chunks, { 'type' : 'video/mp4; codecs=opus' });
+                                var reader = new FileReader();
+                                reader.readAsDataURL(blob);
+                                reader.onloadend = () => socket.emit('video',reader.result);
+                            };
+                            mediaRecorder.start();
+                            videoInterval =  setInterval(()=>{
+                                console.log("video send");
+                                mediaRecorder.stop();
+                                mediaRecorder.start();
+                            }, 100);
+                        })
+                    }
+            }
+        })
+        document.getElementById("stopVideo").addEventListener("change", e => {
+            if(e.target.checked){
+                document.getElementById("startVideo").checked = false;
+            }
+        })
         document.getElementById("startScreen").addEventListener("change", e => {
             if(e.target.checked){
                 if(isSharingScreen){
