@@ -337,6 +337,12 @@ function connectToRoom(){
             $("#inputGroupFile01").get(0).value = "";
             document.querySelector('.custom-file-label').innerText = "Dosya Seç";
         });
+        window.onbeforeunload = () => {
+            if(!isInitiator){
+                senders.forEach(sender => peerConnectionClient.removeTrack(sender));
+            }
+            socket.emit("leaveMeeting");
+        }
         document.getElementById("leaveBtn").addEventListener('click', () => {
             if(confirm("Are you sure?")){
                 if(!isInitiator){

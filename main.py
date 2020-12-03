@@ -98,11 +98,11 @@ def joined():
             "id": session["id"], "index": len(rooms[room]["clients"]), 
             "clients" : json.dumps(clients)
             })
-        clients.append(session["username"])
+        clients.append(session["userName"]) if session["userName"] not in clients
         print(clients)
-        rooms[room]["clients"].append(session["userName"])
+        rooms[room]["clients"].append(session["userName"]) if session["userName"] not in rooms[room]["clients"]
         emit('clientsUpdate',json.dumps(clients),room = room,include_self = False)
-        emit('ready',{"name":session["username"],"id": request.sid},room = rooms[room]["host"],include_self = False)
+        emit('ready',{"name":session["userName"],"id": request.sid},room = rooms[room]["host"],include_self = False)
 
 @socketio.on("message")
 def message(data):
@@ -253,7 +253,7 @@ def createMeeting():
 
 @app.route("/meeting", methods = ['GET'])
 def meeting():
-    session["username"] = current_user.username
+    session["userName"] = current_user.username
     return render_template("meeting.html", joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
 
 @app.route("/newmeeting",methods = ['GET'])
