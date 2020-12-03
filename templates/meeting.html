@@ -19,7 +19,14 @@
   right: 28px;
   width: 280px;
 }
-
+.webcam{
+  width: 250px;
+  height: 180px;
+}
+.screen{
+  width: 500px;
+  height: 360px;
+}
 /* The popup chat - hidden by default */
 .chat-popup {
   display: none;
@@ -36,6 +43,8 @@
   padding: 10px;
   background-color: white;
 }
+
+
 
 /* Full-width textarea */
 .form-container textarea {
@@ -99,28 +108,17 @@
     <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
   </form>
 </div>
-<div id="container">
-  <canvas id="canvasOutput" style="display: none;"></canvas>
-  <canvas id="canvasOutputScreen" style="display: none;"></canvas>
-  <video autoplay="true" id="videoElement" style="display: none;"></video>
-  <video autoplay="true" id="videoElementScreen" style="display: none;"></video>
-  <audio style="display: none;" id="audioElement"></audio>
-</div>
 
-<label class="checkbox-inline-lg"><input type="checkbox" id="startScreen" disabled>Start Screen Sharing</label>
-<label class="checkbox-inline-lg"><input type="checkbox" id="stopScreen">Stop Screen Sharing</label>
-<label class="checkbox-inline-lg"><input type="checkbox" id="start" disabled>Start Webcam Sharing</label>
-<label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stop">Stop Webcam Sharing</label><br />
-<label class="checkbox-inline-lg"><input type="checkbox" id="startVideo" disabled>Start Webcam(Video) Sharing</label>
-<label class="checkbox-inline-lg"><input type="checkbox" checked="checked" id="stopVideo">Stop Webcam(Video) Sharing</label><br />
-<div class = 'video'>
-  <img id="image">
-  <img id="screenImg" width="750" height="540" style="display: none;">
-  <video id="mainVideo" autoplay></video>
-</div>
+<button id="VideoShare">Share Video</button>
+<button id="MicrophoneShare">Share Microphone</button>
+<button id="ScreenShare">Share Screen</button>
 <p>
     Meeting Id = {{meetingId}}
 </p>
+<div id="container">
+  <video autoplay="true" class="webcam" id="videoElement"></video>
+  <video autoplay="true" class="screen" id="videoElementScreen"></video>
+</div>
 {% else %}
 <div class="alert alert-info" role="alert">
     You have not joined any meeting. To join one click <a href="/joinmeeting" class="alert-link">here</a>.

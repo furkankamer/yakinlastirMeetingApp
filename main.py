@@ -52,12 +52,25 @@ meetingIds = range(5000)
 meetingCount = 0
 rooms = {}
 
-@app.before_request
+
+#@app.before_request
 def before_request():
     if not request.is_secure:
         url = request.url.replace('http://', 'https://', 1)
         code = 301
         return redirect(url, code=code)
+
+@socketio.on('messageToClient')
+def messageToClient(message):
+    print("message to client: %s" % message["id"])
+    emit('messageToClient',message["message"],room = message["id"],include_self=False)
+
+
+@socketio.on('messageToServer')
+def message(message):
+    print("message to server: %s" % rooms[session["meetingId"]]["host"])
+    room = session["meetingId"]
+    emit('messageToServer',{"message": message, "id" : request.sid},room = rooms[room]["host"],include_self = False)
 
 @socketio.on("unshareScreen")
 def unshareScreenData():
@@ -91,7 +104,16 @@ def image(data_image):
 def joined():
     join_room(session["meetingId"])
     session["userName"] = current_user.username
-    emit('status', current_user.username + ' has joined to meeting', room = session["meetingId"])
+    emit('status', current_user.username + ' has joined to meeting', room = session["meetingId"], include_self = False)
+    session["id"] = request.sid
+    room = session["meetingId"]
+    if "host" not in rooms[room]:
+        rooms[room]["host"] = request.sid
+        emit('created',{"room" :room, "id": session["id"]})
+    else:
+        rooms[room]["clients"].append(request.sid)
+        emit('joined',{"room" :room, "id": session["id"], "index": len(rooms[room]["clients"])})
+        emit('ready',request.sid,room = rooms[room]["host"],include_self = False)
 
 @socketio.on("message")
 def message(data):
@@ -100,14 +122,25 @@ def message(data):
     else:
         emit("receive", current_user.username + ":" + data["content"], room = session["meetingId"])
 
+@socketio.on("closedroom")
+def closedroom():
+    session["meetingId"] = -1
+    session["joined"] = False
+
 @socketio.on("leaveMeeting")
 def leavemeeting():
-    roomid = session['meetingId']
+    room = session['meetingId']
     leave_room(session["meetingId"])
-    session["joined"] = False
-    session["meetingId"] = -1
-    emit('leave',current_user.username + ": has left meeting",room = roomid)
+    if rooms[room]["host"] != request.sid:
+        rooms[room]["clients"].remove(request.sid)
+        session["joined"] = False
+        session["meetingId"] = -1
+        emit('leave',current_user.username + ": has left meeting",room = room)
+    else:
+        del rooms[room]
+        emit('hostleft',room = room)
     return redirect("/meeting")
+
 
 def sql_returner(query,fetch):
     with psycopg2.connect(url) as connection:
@@ -155,10 +188,11 @@ def get_user(nick):
 def joinmeetingPost():
     id = int(request.form["Id"])
     meetingPassword = request.form["Password"]
-    if id in rooms and rooms[id] != meetingPassword:
+    if id in rooms and rooms[id]["password"] != meetingPassword:
         return redirect("/joinmeeting")
-    rooms[id] = meetingPassword
-    session["meetingId"] = int(id)
+    if id not in rooms:
+        return redirect("/joinmeeting")
+    session["meetingId"] = id
     session["joined"] = True
     return redirect("/meeting")
 
@@ -208,12 +242,15 @@ def createMeeting():
     global meetingCount
     while meetingCount in rooms:
         meetingCount += 1
+    id = int(meetingIds[meetingCount])
+    session["meetingId"] = id
     meetingName = request.form["Name"]
     meetingPassword = request.form["Password"]
-    session["meetingId"] = meetingIds[meetingCount]
+    rooms[id] = {}
+    rooms[id]["clients"] = [] 
+    rooms[id]["password"] = meetingPassword
     session["joined"] = True
     meetingCount += 1
-    rooms[session["meetingId"]] = meetingPassword
     return redirect("/meeting")
 
 
