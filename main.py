@@ -126,6 +126,7 @@ def message(data):
 def closedroom():
     session["meetingId"] = -1
     session["joined"] = False
+    return redirect("/joinroom")
 
 @socketio.on("leaveMeeting")
 def leavemeeting():

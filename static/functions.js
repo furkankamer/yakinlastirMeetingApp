@@ -26,7 +26,7 @@ function connectToRoom(){
         offerToReceiveVideo: true
     };
     var peerConnectionClient;
-    var clientId;
+    var receivedStreams = [];
     var isInitiator;
     $(document).ready(function(){
         grabWebCamVideo();
@@ -189,6 +189,7 @@ function connectToRoom(){
             if (isInitiator) {
                 stream.getTracks().forEach(track => peerConn.addTrack(track, stream));
                 peerConn.ontrack = e => {
+                    console.warn(e);
                     peerConnectionsStreams[clientId] = e.streams[0];
                     document.getElementById(String(clientId)).srcObject = e.streams[0];
                     for(const[key,value] of Object.entries(peerConnections))
@@ -205,14 +206,17 @@ function connectToRoom(){
                 }
                 console.log('Creating an offer');
             } else {
+                console.warn("client webcam added");
                 setTimeout(() => stream.getTracks().forEach(track => peerConn.addTrack(track, stream)), 1000);
                 peerConn.ontrack = e => {
-                    console.warn("client webcam added");
-                    var clientVideo = document.createElement("video");
-                    clientVideo.autoplay = true;
-                    clientVideo.className = "webcam";
-                    document.getElementById("container").appendChild(clientVideo);
-                    clientVideo.srcObject = e.streams[0];
+                    if(!receivedStreams.includes(e.streams[0])){
+                        var clientVideo = document.createElement("video");
+                        clientVideo.autoplay = true;
+                        clientVideo.className = "webcam";
+                        document.getElementById("container").appendChild(clientVideo);
+                        clientVideo.srcObject = e.streams[0];
+                        receivedStreams.push(e.streams[0]);
+                    }
                 }
                 
             }
