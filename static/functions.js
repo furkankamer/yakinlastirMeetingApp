@@ -11,6 +11,11 @@ var peerConnectionsStreams = {};
 var numberOfCurrentClients = 2;
 var username;
 var senders = [];
+var connectionsgetscreensenders = {};
+var getscreensenders = [];
+var screenStream;
+var isSomeoneSharesScreen = false;
+var screenSharingPeers = {};
 function connectToRoom(){
     var displayMediaOptions = {
         video: {
@@ -104,7 +109,11 @@ function connectToRoom(){
             console.log('Client received message:', message);
             signalingMessageCallback(message,peerConnectionClient);
         })
-        
+        socket.on('someoneSharingScreen', () => isSomeoneSharesScreen = true);
+        socket.on('screenShareStopped', () => {
+            isSomeoneSharesScreen = false;
+            screen.style.display = "none";
+        });
         function grabWebCamVideo() {
             console.log('Getting user media (video) ...');
             navigator.mediaDevices.getUserMedia({
@@ -176,7 +185,48 @@ function connectToRoom(){
             
         })
         screenShareButton.addEventListener('click',() => {
-            
+            if(!screenShareButton.innerText.includes("Stop")){
+                if(isSomeoneSharesScreen){
+                    alert("Someone already shares screen. You cannot share yours.")
+                }else{
+                    navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
+                            .then(screenstream =>  {
+                                socket.emit('sharingScreen');
+                                screenStream = screenstream;
+                                screenStream.getTracks()[0]["type"] = "screen";
+                                screen.srcObject = screenstream;
+                                screen.style.display = "block";
+                                screenShareButton.innerText = "Stop Screen Share";
+                                screenStream.oninactive = () => screenShareButton.click();
+                                if(isInitiator){
+                                    for(const[key,value] of Object.entries(peerConnections)){
+                                        connectionsgetscreensenders[key] = [];
+                                        screenStream.getTracks().forEach(
+                                            track => connectionsgetscreensenders[key].push(value.addTrack(track,screenStream))
+                                        );
+                                    }
+                                }
+                                else{
+                                    screenStream.getTracks().forEach(
+                                        track => getscreensenders.push(peerConnectionClient.addTrack(track,screenStream))
+                                    )
+                                }
+                            })
+                            .catch(error => console.warn(error));
+                }
+            }
+            else{
+                if(isInitiator){
+                    for(const[key,value] of Object.entries(peerConnections))
+                        connectionsgetscreensenders[key].forEach(t => value.removeTrack(t));
+                }
+                else{
+                    getscreensenders.forEach(t => peerConnectionClient.removeTrack(t));
+                }
+                screen.style.display = "none";
+                socket.emit('stoppedScreenShare');
+                screenShareButton.innerText = "Share Screen";
+            }
         })
 
         function createPeerConnection(isInitiator, config, clientId = null,clientName = null) {
@@ -226,7 +276,13 @@ function connectToRoom(){
             if (isInitiator) {
                 stream.getTracks().forEach(track => peerConn.addTrack(track, stream));
                 peerConn.ontrack = e => {
-                    console.warn(e);
+                    console.warn(e.streams[0].getTracks()[0]);
+                    if(document.getElementById(clientName).srcObject && !Object.values(peerConnectionsStreams).includes(e.streams[0])){
+                        screen.srcObject = e.streams[0];
+                        screen.style.display = "block";
+                        console.warn("screen shared");
+                        return;
+                    }
                     peerConnectionsStreams[clientId] = e.streams[0];
                     document.getElementById(String(clientName)).srcObject = e.streams[0];
                     for(const[key,value] of Object.entries(peerConnections))
@@ -246,6 +302,13 @@ function connectToRoom(){
                 console.warn("client webcam added");
                 setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConn.addTrack(track, stream))), 1000);
                 peerConn.ontrack = e => {
+                    console.warn(e.streams[0]);
+                    if(e.streams[0].type && e.streams[0].getTracks()[0].type == "screen"){
+                        screen.srcObject = e.streams[0];
+                        screen.style.display = "block";
+                        console.warn("screen shared");
+                        return;
+                    }
                     if(!receivedStreams.includes(e.streams[0])){
                         var clientVideo = document.createElement("video");
                         clientVideo.autoplay = true;

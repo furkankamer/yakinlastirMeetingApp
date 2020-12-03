@@ -63,7 +63,13 @@ def before_request():
         code = 301
         return redirect(url, code=code)
 
-@socketio.on("sent")
+@socketio.on("sharingScreen")
+def screenSharing():
+    emit('someoneSharingScreen', room = session['meetingId'])
+
+@socketio.on('stoppedScreenShare')
+def stoppedScreenSharing():
+    emit('screenShareStopped', room = session['meetingId'])
 
 @socketio.on('messageToClient')
 def messageToClient(message):
@@ -88,6 +94,7 @@ def joined():
     if "host" not in rooms[room]:
         rooms[room]["host"] = request.sid
         rooms[room]["hostname"] = session["userName"]
+        print(rooms)
         emit('created',{"room" :room, "id": session["id"]})
     else:
         clients = []
@@ -105,6 +112,7 @@ def joined():
         print(clients)
         if session["userName"] not in rooms[room]["clients"]:
             rooms[room]["clients"].append(session["userName"])
+        print(rooms[room]["clients"])
         emit('clientsUpdate',json.dumps(clients),room = room,include_self = False)
         emit('ready',{"name":session["userName"],"id": request.sid},room = rooms[room]["host"],include_self = False)
 
@@ -128,7 +136,9 @@ def closedroom():
 def leavemeeting():
     room = session['meetingId']
     leave_room(session["meetingId"])
-    if rooms[room]["host"] != request.sid:
+    if not rooms:
+        return
+    elif rooms[room]["host"] != request.sid:
         rooms[room]["clients"].remove(current_user.username)
         session["joined"] = False
         session["meetingId"] = -1
@@ -141,7 +151,7 @@ def leavemeeting():
         emit('clientsUpdate',json.dumps(clients),room = room)
     else:
         del rooms[room]
-        emit('hostleft',room = room)
+        emit('hostleft',room = room,include_self = False)
     return redirect("/meeting")
 
 
