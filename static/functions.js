@@ -5,14 +5,13 @@ function leaveMeeting(){
             .then(() => location.href = "/")
             .catch(() => alert("an error occured"));
 }
-
+var currentClients;
 var peerConnections = {};
 var peerConnectionsStreams = {};
-var lastParticipatedClient;
+var numberOfCurrentClients = 2;
+var username;
+var senders = [];
 function connectToRoom(){
-    const FPS = 25;
-    var src;
-    var dst;
     var displayMediaOptions = {
         video: {
             cursor: "always"
@@ -71,20 +70,30 @@ function connectToRoom(){
         });
         socket.on('hostleft', () => {
             alert("host has closed this meeting");
+            location.href = "/";
             socket.emit('closedroom');
         })
         socket.on('created', function(data) {
             isInitiator = true;
             console.log('Created room', data["room"], '- my client ID is', data["id"]);
         });
+        socket.on('clientsUpdate',clients => {
+            currentClients = JSON.parse(clients)
+            const index = currentClients.indexOf(username);
+                if (index > -1) {
+                    currentClients.splice(index, 1);
+            }
+        });
         socket.on('joined', function(data) {
+            username = data["username"];
+            currentClients = JSON.parse(data["clients"])
             clientId = data["id"];
             isInitiator = false;
             console.log('This peer has joined room', data["room"], 'with client ID', data["id"]);
             createPeerConnection(isInitiator, configuration);
         });
-        socket.on('ready', clientId => createPeerConnection(isInitiator, configuration, clientId));
-        socket.on('clientId',Id => lastParticipatedClient = Id);
+        socket.on('removeUserVideo',user => document.getElementById(user).remove());
+        socket.on('ready', clientData => createPeerConnection(isInitiator, configuration, clientData["id"],clientData["name"]));
         socket.on('messageToServer', message => {
             if(!isInitiator) console.log("miss messaging detected");
             console.log('Server received message:', message);
@@ -170,11 +179,11 @@ function connectToRoom(){
             
         })
 
-        function createPeerConnection(isInitiator, config, clientId = null) {
+        function createPeerConnection(isInitiator, config, clientId = null,clientName = null) {
             var peerConn = new RTCPeerConnection(config);
             if(clientId){
                 var clientVideo = document.createElement("video");
-                clientVideo.id = String(clientId);
+                clientVideo.id = String(clientName);
                 clientVideo.autoplay = true;
                 clientVideo.className = "webcam";
                 var emptycell = [...persons.rows[persons.rows.length-1]
@@ -219,17 +228,15 @@ function connectToRoom(){
                 peerConn.ontrack = e => {
                     console.warn(e);
                     peerConnectionsStreams[clientId] = e.streams[0];
-                    document.getElementById(String(clientId)).srcObject = e.streams[0];
+                    document.getElementById(String(clientName)).srcObject = e.streams[0];
                     for(const[key,value] of Object.entries(peerConnections))
                         if(key != clientId){
                             console.log(key," ",clientId);
-                            socket.emit('lastparticipantid',key);
                             e.streams[0].getTracks().forEach(track => value.addTrack(track,e.streams[0]));
                         }
                     for(const[key,value] of Object.entries(peerConnectionsStreams)){
                         if(key != clientId){
                             console.log(key," ",clientId);
-                            socket.emit('lastparticipantid',key);
                             value.getTracks().forEach(track => peerConn.addTrack(track,value));
                         }
                     }
@@ -237,12 +244,11 @@ function connectToRoom(){
                 console.log('Creating an offer');
             } else {
                 console.warn("client webcam added");
-                setTimeout(() => stream.getTracks().forEach(track => peerConn.addTrack(track, stream)), 1000);
+                setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConn.addTrack(track, stream))), 1000);
                 peerConn.ontrack = e => {
                     if(!receivedStreams.includes(e.streams[0])){
                         var clientVideo = document.createElement("video");
                         clientVideo.autoplay = true;
-                        clientVideo.id = String(lastParticipatedClient);
                         clientVideo.className = "webcam";
                         var emptycell = [...persons.rows[persons.rows.length-1]
                             .cells].find(cell => !cell.children.length);
@@ -257,6 +263,10 @@ function connectToRoom(){
                         }
                         clientVideo.srcObject = e.streams[0];
                         receivedStreams.push(e.streams[0]);
+                        [...persons.getElementsByTagName("video")]
+                            .forEach((vid,ind) => {
+                                if(ind > 0) vid.id = currentClients[ind-1];
+                            })
                     }
                 }
                 
@@ -329,6 +339,9 @@ function connectToRoom(){
         });
         document.getElementById("leaveBtn").addEventListener('click', () => {
             if(confirm("Are you sure?")){
+                if(!isInitiator){
+                    senders.forEach(sender => peerConnectionClient.removeTrack(sender));
+                }
                 socket.emit("leaveMeeting");
                 location.href = "/";
             }

@@ -11,9 +11,11 @@ from flask_cors import CORS, cross_origin
 import psycopg2
 import pytz
 import random
+import json
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from engineio.payload import Payload
 from flask_talisman import Talisman
+
 csp = {
     'default-src': [
         '\'self\'',
@@ -52,11 +54,16 @@ rooms = {}
 
 
 #@app.before_request
+
+
+
 def before_request():
     if not request.is_secure:
         url = request.url.replace('http://', 'https://', 1)
         code = 301
         return redirect(url, code=code)
+
+@socketio.on("sent")
 
 @socketio.on('messageToClient')
 def messageToClient(message):
@@ -80,11 +87,21 @@ def joined():
     room = session["meetingId"]
     if "host" not in rooms[room]:
         rooms[room]["host"] = request.sid
+        rooms[room]["hostname"] = session["userName"]
         emit('created',{"room" :room, "id": session["id"]})
     else:
-        rooms[room]["clients"].append(request.sid)
-        emit('joined',{"room" :room, "id": session["id"], "index": len(rooms[room]["clients"])})
-        emit('ready',request.sid,room = rooms[room]["host"],include_self = False)
+        clients = rooms[room]["clients"]
+        clients.insert(0,rooms[room]["hostname"])
+        print(clients)
+        emit('joined',{
+            "room" :room,"username":session["userName"], 
+            "id": session["id"], "index": len(rooms[room]["clients"]), 
+            "clients" : json.dumps(clients)
+            })
+        clients.append(session["username"])
+        rooms[room]["clients"].append(session["userName"])
+        emit('clientsUpdate',json.dumps(clients),room = room,include_self = False)
+        emit('ready',{"name":session["username"],"id": request.sid},room = rooms[room]["host"],include_self = False)
 
 @socketio.on("message")
 def message(data):
@@ -101,17 +118,20 @@ def lastparticipantid(id):
 def closedroom():
     session["meetingId"] = -1
     session["joined"] = False
-    return redirect("/joinroom")
 
 @socketio.on("leaveMeeting")
 def leavemeeting():
     room = session['meetingId']
     leave_room(session["meetingId"])
     if rooms[room]["host"] != request.sid:
-        rooms[room]["clients"].remove(request.sid)
+        rooms[room]["clients"].remove(current_user.username)
         session["joined"] = False
         session["meetingId"] = -1
         emit('leave',current_user.username + ": has left meeting",room = room)
+        emit('removeUserVideo',session["userName"],room = room)
+        clients = rooms[room]["clients"]
+        clients.insert(0,rooms[room]["hostname"])
+        emit('clientsUpdate',json.dumps(clients),room = room)
     else:
         del rooms[room]
         emit('hostleft',room = room)
@@ -232,6 +252,7 @@ def createMeeting():
 
 @app.route("/meeting", methods = ['GET'])
 def meeting():
+    session["username"] = current_user.username
     return render_template("meeting.html", joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
 
 @app.route("/newmeeting",methods = ['GET'])
