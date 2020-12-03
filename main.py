@@ -97,10 +97,12 @@ def joined():
             "room" :room,"username":session["userName"], 
             "id": session["id"], "index": len(rooms[room]["clients"]), 
             "clients" : json.dumps(clients)
-            })
-        clients.append(session["userName"]) if session["userName"] not in clients
+            }) 
+        if session["userName"] not in clients:
+            clients.append(session["userName"])
         print(clients)
-        rooms[room]["clients"].append(session["userName"]) if session["userName"] not in rooms[room]["clients"]
+        if session["userName"] not in rooms[room]["clients"]:
+            rooms[room]["clients"].append(session["userName"])
         emit('clientsUpdate',json.dumps(clients),room = room,include_self = False)
         emit('ready',{"name":session["userName"],"id": request.sid},room = rooms[room]["host"],include_self = False)
 
