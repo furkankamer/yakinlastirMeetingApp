@@ -99,6 +99,7 @@ def joined():
             "clients" : json.dumps(clients)
             })
         clients.append(session["username"])
+        print(clients)
         rooms[room]["clients"].append(session["userName"])
         emit('clientsUpdate',json.dumps(clients),room = room,include_self = False)
         emit('ready',{"name":session["username"],"id": request.sid},room = rooms[room]["host"],include_self = False)
