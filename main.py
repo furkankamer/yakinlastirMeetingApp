@@ -90,7 +90,9 @@ def joined():
         rooms[room]["hostname"] = session["userName"]
         emit('created',{"room" :room, "id": session["id"]})
     else:
-        clients = rooms[room]["clients"]
+        clients = []
+        for client in rooms[room]["clients"]:
+            clients.append(client)
         clients.insert(0,rooms[room]["hostname"])
         print(clients)
         emit('joined',{
@@ -132,7 +134,9 @@ def leavemeeting():
         session["meetingId"] = -1
         emit('leave',current_user.username + ": has left meeting",room = room)
         emit('removeUserVideo',session["userName"],room = room)
-        clients = rooms[room]["clients"]
+        clients = []
+        for client in rooms[room]["clients"]:
+            clients.append(client) 
         clients.insert(0,rooms[room]["hostname"])
         emit('clientsUpdate',json.dumps(clients),room = room)
     else:
