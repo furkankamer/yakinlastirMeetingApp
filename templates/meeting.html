@@ -26,6 +26,7 @@
 .screen{
   width: 500px;
   height: 360px;
+  display: none;
 }
 /* The popup chat - hidden by default */
 .chat-popup {
@@ -115,10 +116,23 @@
 <p>
     Meeting Id = {{meetingId}}
 </p>
-<div id="container">
-  <video autoplay="true" class="webcam" id="videoElement"></video>
   <video autoplay="true" class="screen" id="videoElementScreen"></video>
-</div>
+  <table id="table">
+    <thead>
+      <th>Person 1</th>
+      <th>Person 2</th>
+      <th>Person 3</th>
+      <th>Person 4</th>
+    </thead>
+    <tbody id="persons">
+          <tr>
+            <td><video autoplay="true" class="webcam" id="videoElement"></video></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+    </tbody>
+  </table>
 {% else %}
 <div class="alert alert-info" role="alert">
     You have not joined any meeting. To join one click <a href="/joinmeeting" class="alert-link">here</a>.

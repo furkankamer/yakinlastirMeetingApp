@@ -48,8 +48,6 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.secret_key = b'\xdd\xd6]j\xb0\xcc\xe3mNF{\x14\xaf\xa7\xb9\x18'
 lm = LoginManager()
-meetingIds = range(5000)
-meetingCount = 0
 rooms = {}
 
 
@@ -72,33 +70,6 @@ def message(message):
     room = session["meetingId"]
     emit('messageToServer',{"message": message, "id" : request.sid},room = rooms[room]["host"],include_self = False)
 
-@socketio.on("unshareScreen")
-def unshareScreenData():
-    emit("unsharescreen",room = session["meetingId"])
-
-@socketio.on('shareScreen')
-def screenData(data):
-    emit('sendScreen',data,room = session["meetingId"])
-
-@socketio.on('unshare')
-def unshare(data):
-    emit('unshare',data,room = session["meetingId"])
-
-@socketio.on('audio')
-def receivedAudio(data):
-    emit('playaudio',data,room = session["meetingId"])
-
-@socketio.on('unsharevideo')
-def unshareVideo(data):
-    emit('unsharevideo',data,room = session["meetingId"])
-
-@socketio.on('video')
-def receiveVideo(data):
-    emit('video',{"data": data, "username": session["userName"]},room = session["meetingId"])
-
-@socketio.on('image')
-def image(data_image):
-    emit('sharedData',{"data": data_image, "username": session["userName"]}, room = session["meetingId"])
 
 @socketio.on("joined")
 def joined():
@@ -121,6 +92,10 @@ def message(data):
         emit("filereceive", data, room = session["meetingId"])
     else:
         emit("receive", current_user.username + ":" + data["content"], room = session["meetingId"])
+
+@socketio.on('lastparticipantid')
+def lastparticipantid(id):
+    emit('clientId',id,room = session["room"],include_self = False)
 
 @socketio.on("closedroom")
 def closedroom():
@@ -240,10 +215,10 @@ def logout():
 def createMeeting():
     setattr(current_user,'joined',True)
     current_user.joined = True
-    global meetingCount
+    meetingCount = 0
     while meetingCount in rooms:
         meetingCount += 1
-    id = int(meetingIds[meetingCount])
+    id = int(meetingCount)
     session["meetingId"] = id
     meetingName = request.form["Name"]
     meetingPassword = request.form["Password"]

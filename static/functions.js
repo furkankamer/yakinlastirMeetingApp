@@ -8,6 +8,7 @@ function leaveMeeting(){
 
 var peerConnections = {};
 var peerConnectionsStreams = {};
+var lastParticipatedClient;
 function connectToRoom(){
     const FPS = 25;
     var src;
@@ -30,11 +31,28 @@ function connectToRoom(){
     var isInitiator;
     $(document).ready(function(){
         grabWebCamVideo();
+        $("#table").dataTable({
+            dom: "<'row'<'col-sm-3'l><'col-sm-3'f><'col-sm-6'p>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            "columnDefs": [
+                {
+                    "orderable": false,
+                    "targets": [0,1,2,3]
+                },
+            ],
+            "fixedColumns": true,
+            "bProcessing": true,
+            "deferRender": true,
+            "iDisplayLength": 2,
+            "aLengthMenu": [[2,5,10, 25, 50, 100, -1], [2,5,10, 25, 50, 100, "All"]]
+        });
         const video = document.querySelector("#videoElement");
         const screen = document.getElementById("videoElementScreen");
         const videoShareButton = document.getElementById("VideoShare");
         const audioShareButton = document.getElementById("MicrophoneShare")
         const screenShareButton = document.getElementById("ScreenShare");
+        const persons = document.getElementById("persons");
         socket = io.connect( location.protocol + '//' + document.domain + ':' + location.port + '/',{transports: ['websocket']});
         socket.on('connect', () => socket.emit('joined'));
         socket.on('status', () => {
@@ -66,7 +84,7 @@ function connectToRoom(){
             createPeerConnection(isInitiator, configuration);
         });
         socket.on('ready', clientId => createPeerConnection(isInitiator, configuration, clientId));
-        
+        socket.on('clientId',Id => lastParticipatedClient = Id);
         socket.on('messageToServer', message => {
             if(!isInitiator) console.log("miss messaging detected");
             console.log('Server received message:', message);
@@ -159,7 +177,17 @@ function connectToRoom(){
                 clientVideo.id = String(clientId);
                 clientVideo.autoplay = true;
                 clientVideo.className = "webcam";
-                document.getElementById("container").appendChild(clientVideo);
+                var emptycell = [...persons.rows[persons.rows.length-1]
+                    .cells].find(cell => !cell.children.length);
+                if(emptycell)
+                    emptycell.appendChild(clientVideo)
+                else{
+                    var emptyrow = persons.insertRow();
+                    for(let i = 0;i<4;i++){
+                        if(i == 0) emptyrow.insertCell().appendChild(clientVideo);
+                        else emptyrow.insertCell();
+                    }
+                }
                 peerConnections[clientId] = peerConn
             }
             else{
@@ -195,11 +223,13 @@ function connectToRoom(){
                     for(const[key,value] of Object.entries(peerConnections))
                         if(key != clientId){
                             console.log(key," ",clientId);
+                            socket.emit('lastparticipantid',key);
                             e.streams[0].getTracks().forEach(track => value.addTrack(track,e.streams[0]));
                         }
                     for(const[key,value] of Object.entries(peerConnectionsStreams)){
                         if(key != clientId){
                             console.log(key," ",clientId);
+                            socket.emit('lastparticipantid',key);
                             value.getTracks().forEach(track => peerConn.addTrack(track,value));
                         }
                     }
@@ -212,8 +242,19 @@ function connectToRoom(){
                     if(!receivedStreams.includes(e.streams[0])){
                         var clientVideo = document.createElement("video");
                         clientVideo.autoplay = true;
+                        clientVideo.id = String(lastParticipatedClient);
                         clientVideo.className = "webcam";
-                        document.getElementById("container").appendChild(clientVideo);
+                        var emptycell = [...persons.rows[persons.rows.length-1]
+                            .cells].find(cell => !cell.children.length);
+                        if(emptycell)
+                            emptycell.appendChild(clientVideo)
+                        else{
+                            var emptyrow = persons.insertRow();
+                            for(let i = 0;i<4;i++){
+                                if(i == 0) emptyrow.insertCell().appendChild(clientVideo);
+                                else emptyrow.insertCell();
+                            }
+                        }
                         clientVideo.srcObject = e.streams[0];
                         receivedStreams.push(e.streams[0]);
                     }
