@@ -139,6 +139,9 @@ function connectToRoom(){
             video.srcObject = stream;
             video.play();
             video.onloadedmetadata = () =>console.log('gotStream with width and height:',  video.videoWidth, video.videoHeight);
+            if(!isInitiator)
+                setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConnectionClient.addTrack(track, stream))), 1000);
+
         }
 
         screen.onclick = () => {
@@ -359,8 +362,6 @@ function connectToRoom(){
                 console.log('Creating an offer');
             } else {
                 console.warn("client webcam added");
-                if(typeof stream !== 'undefined')
-                    setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConn.addTrack(track, stream))), 1000);
                 peerConn.ontrack = e => {
                     console.warn(e.streams[0]);
                     if(!e.streams[0].getAudioTracks().length){
