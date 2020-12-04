@@ -327,7 +327,8 @@ function connectToRoom(){
             if (isInitiator) {
                 if(isSomeoneSharesScreen)
                     currentSharedScreenStream.getTracks().forEach(track => peerConn.addTrack(track,currentSharedScreenStream));
-                stream.getTracks().forEach(track => peerConn.addTrack(track, stream));
+                if(stream)
+                    stream.getTracks().forEach(track => peerConn.addTrack(track, stream));
                 peerConn.ontrack = e => {
                     console.warn(e.streams[0].getTracks()[0]);
                     if(!e.streams[0].getAudioTracks().length){
@@ -360,7 +361,8 @@ function connectToRoom(){
                 console.log('Creating an offer');
             } else {
                 console.warn("client webcam added");
-                setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConn.addTrack(track, stream))), 1000);
+                if(stream)
+                    setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConn.addTrack(track, stream))), 1000);
                 peerConn.ontrack = e => {
                     console.warn(e.streams[0]);
                     if(!e.streams[0].getAudioTracks().length){

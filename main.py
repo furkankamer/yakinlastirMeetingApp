@@ -247,7 +247,9 @@ def createMeeting():
 @app.route("/meeting", methods = ['GET'])
 def meeting():
     session["userName"] = current_user.username
-    return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
+    if session["meetingId"] in rooms:
+        return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
+    return render_template("meeting.html",joined = session["joined"])
 
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():
