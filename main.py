@@ -125,6 +125,8 @@ def leavemeeting():
         clients.insert(0,rooms[room]["hostname"])
         emit('clientsUpdate',json.dumps(clients),room = room)
     else:
+        session["joined"] = False
+        session["meetingId"] = -1
         del rooms[room]
         emit('hostleft',room = room,include_self = False)
     return redirect("/meeting")
