@@ -132,7 +132,7 @@ function connectToRoom(){
                 alert('getUserMedia() error: ' + e);
             });
         }
-
+        video.ondblclick = () => toggleFullscreen(video); 
         function gotStream(stream) {
             console.log('getUserMedia video stream URL:', stream);
             stream.getTracks().forEach(track => track.enabled = false);
