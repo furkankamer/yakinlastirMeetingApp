@@ -154,6 +154,8 @@ function connectToRoom(){
                 screen.className = "webcam";
             }
         }
+        screen.ondblclick = e => toggleFullscreen(e.target);
+        screen.nextElementSibling.ondblclick = e => toggleFullscreen(e.target);
 
         videoShareButton.addEventListener('click',() => {
             if(videoShareButton.innerText.includes("Share")){
@@ -178,6 +180,20 @@ function connectToRoom(){
 
             }
         })
+        
+        function toggleFullscreen(player) {
+            if (!document.webkitFullscreenElement) {
+                if (player.requestFullScreen) {
+                    player.requestFullScreen();
+            } else if (player.webkitRequestFullScreen) {
+                player.webkitRequestFullScreen();
+            } else if (player.mozRequestFullScreen) {
+                player.mozRequestFullScreen();
+            }
+            } else {
+                document.webkitExitFullscreen();
+            }
+        }
         audioShareButton.addEventListener('click',() => {
             if(audioShareButton.innerText.includes("Share")){
                 try
@@ -264,6 +280,7 @@ function connectToRoom(){
                     screen.nextElementSibling.srcObject = clientVideo.srcObject;
                     screen.nextElementSibling.play();
                 }
+                clientVideo.ondblclick = e => toggleFullscreen(e.target);
                 videodiv.appendChild(clientVideo);
                 videodiv.id = String(clientName);
                 clientVideo.autoplay = true;
@@ -360,6 +377,7 @@ function connectToRoom(){
                             screen.nextElementSibling.srcObject = clientVideo.srcObject;
                             screen.nextElementSibling.play();
                         }
+                        clientVideo.ondblclick = e => toggleFullscreen(e.target);
                         var emptycell = [...persons.rows[persons.rows.length-1]
                             .cells].find(cell => !cell.children.length);
                         if(emptycell)
