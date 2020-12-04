@@ -12,6 +12,7 @@ var numberOfCurrentClients = 2;
 var username;
 var hostname;
 var senders = [];
+var currentSharedScreenStream;
 var connectionsgetscreensenders = {};
 var getscreensenders = [];
 var screenStream;
@@ -323,10 +324,13 @@ function connectToRoom(){
                 .then(() => sendMessage(peerConn.localDescription,clientId));
     
             if (isInitiator) {
+                if(isSomeoneSharesScreen)
+                    currentSharedScreenStream.getTracks().forEach(track => peerConn.addTrack(track,currentSharedScreenStream));
                 stream.getTracks().forEach(track => peerConn.addTrack(track, stream));
                 peerConn.ontrack = e => {
                     console.warn(e.streams[0].getTracks()[0]);
                     if(!e.streams[0].getAudioTracks().length){
+                        currentSharedScreenStream = e.streams[0];
                         console.warn("screen got");
                         screen.srcObject = e.streams[0];
                         screen.play();
@@ -339,11 +343,12 @@ function connectToRoom(){
                     peerConnectionsStreams[clientId] = e.streams[0];
                     document.getElementById(String(clientName)).lastElementChild.srcObject = e.streams[0];
                     document.getElementById(String(clientName)).lastElementChild.play();
-                    for(const[key,value] of Object.entries(peerConnections))
+                    for(const[key,value] of Object.entries(peerConnections)){
                         if(key != clientId){
                             console.log(key," ",clientId);
                             e.streams[0].getTracks().forEach(track => value.addTrack(track,e.streams[0]));
                         }
+                    }
                     for(const[key,value] of Object.entries(peerConnectionsStreams)){
                         if(key != clientId){
                             console.log(key," ",clientId);
