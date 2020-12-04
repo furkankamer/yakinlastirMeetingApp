@@ -235,6 +235,7 @@ function connectToRoom(){
                                 screen.style.display = "block";
                                 screenShareButton.innerText = "Stop Screen Share";
                                 screenStream.oninactive = () => screenShareButton.click();
+                                currentSharedScreenStream = screenstream;
                                 if(isInitiator){
                                     for(const[key,value] of Object.entries(peerConnections)){
                                         connectionsgetscreensenders[key] = [];
