@@ -14,34 +14,6 @@ import random
 import json
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from engineio.payload import Payload
-from flask_talisman import Talisman
-
-csp = {
-    'default-src': [
-        '\'self\'',
-        '*.googleapis.com',
-        '*.cloudflare.com',
-        '*.bootstrapcdn.com',
-        '\'unsafe-inline\'',
-        '*.herokuapp.com'
-    ],
-    'style-src': [
-        "'self'",
-        '*.bootstrapcdn.com',
-        '*.googleapis.com',
-        '\'unsafe-inline\'',
-        '*.herokuapp.com'
-    ],
-    'script-src': [
-        "'self'",
-        "'unsafe-eval'",
-        '*.bootstrapcdn.com',
-        '\'unsafe-inline\'',
-        '*.googleapis.com',
-        '*.cloudflare.com',
-        '*.herokuapp.com'
-    ]
-}
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
 app = Flask(__name__)
 Talisman(app,content_security_policy = csp,content_security_policy_nonce_in = ['script-src','style-src'])
@@ -53,7 +25,7 @@ lm = LoginManager()
 rooms = {}
 
 
-#@app.before_request
+@app.before_request
 def before_request():
     if not request.is_secure:
         url = request.url.replace('http://', 'https://', 1)
