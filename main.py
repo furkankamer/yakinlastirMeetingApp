@@ -62,10 +62,12 @@ def before_request():
 
 @socketio.on("sharingScreen")
 def screenSharing():
+    rooms[session["meetingId"]]["isSomeoneSharingScreen"] = True
     emit('someoneSharingScreen', room = session['meetingId'])
 
 @socketio.on('stoppedScreenShare')
 def stoppedScreenSharing():
+    rooms[session["meetingId"]]["isSomeoneSharingScreen"] = False
     emit('screenShareStopped', room = session['meetingId'])
 
 @socketio.on('messageToClient')
@@ -89,6 +91,7 @@ def joined():
     session["id"] = request.sid
     room = session["meetingId"]
     if "host" not in rooms[room]:
+        rooms[room]["isSomeoneSharingScreen"] = False 
         rooms[room]["host"] = request.sid
         rooms[room]["hostname"] = session["userName"]
         print(rooms)
@@ -99,6 +102,8 @@ def joined():
             clients.append(client)
         clients.insert(0,rooms[room]["hostname"])
         print(clients)
+        if rooms[room]["isSomeoneSharingScreen"]:
+            emit("someoneSharingScreen")
         emit('joined',{
             "room" :room,"username":session["userName"], 
             "id": session["id"], "index": len(rooms[room]["clients"]), 

@@ -332,6 +332,8 @@ function connectToRoom(){
                         screen.play();
                         screen.style.display = "block";
                         console.warn("screen shared");
+                        for(const[key,value] of Object.entries(peerConnections))
+                            e.streams[0].getTracks().forEach(track => value.addTrack(track,e.streams[0]));
                         return;
                     }
                     peerConnectionsStreams[clientId] = e.streams[0];
