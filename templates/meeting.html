@@ -19,6 +19,9 @@
   right: 28px;
   width: 280px;
 }
+p{
+  text-align: center;
+}
 .webcam{
   width: 250px;
   height: 180px;
@@ -88,11 +91,17 @@
 </style>
 <button id="leaveBtn" class="btn btn-danger">Leave Meeting</button>
 <button class="open-button" onclick="openForm()">Chat</button>
+<p>
+    Meeting Id = {{meetingId}}
+</p>
+<p>
+    Meeting Name = {{meetingName}}
+</p>
 
 <div class="chat-popup" id="myForm">
   <form action="/action_page.php" class="form-container">
     <h1>Chat</h1>
-    <div class="container border border-secondary" style="float: left; color: oldlace; background-color:indigo; height: 150px; overflow: auto;" id="chat">
+    <div class="container border border-secondary" style="float: left; color: oldlace; background-color:indigo; height: 150px; overflow: scroll;" id="chat">
     
     </div>
     <label for="msg"><b>Message</b></label>
@@ -113,20 +122,25 @@
 <button id="VideoShare">Share Video</button>
 <button id="MicrophoneShare">Share Microphone</button>
 <button id="ScreenShare">Share Screen</button>
-<p>
-    Meeting Id = {{meetingId}}
-</p>
+<div>
   <video autoplay="true" class="screen" id="videoElementScreen"></video>
+  <video autoplay="true" id="focusVideo" class="screen" style="display: none;"></video>
+</div>
   <table id="table">
     <thead>
-      <th>Person 1</th>
-      <th>Person 2</th>
-      <th>Person 3</th>
-      <th>Person 4</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
     </thead>
     <tbody id="persons">
           <tr>
-            <td><video autoplay="true" class="webcam" id="videoElement"></video></td>
+            <td>
+              <div>
+                <p>Me</p>
+                <video autoplay="true" class="webcam" id="videoElement"></video>
+              </div>
+            </td>
             <td></td>
             <td></td>
             <td></td>

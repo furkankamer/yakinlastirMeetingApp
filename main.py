@@ -54,9 +54,6 @@ rooms = {}
 
 
 #@app.before_request
-
-
-
 def before_request():
     if not request.is_secure:
         url = request.url.replace('http://', 'https://', 1)
@@ -105,7 +102,8 @@ def joined():
         emit('joined',{
             "room" :room,"username":session["userName"], 
             "id": session["id"], "index": len(rooms[room]["clients"]), 
-            "clients" : json.dumps(clients)
+            "clients" : json.dumps(clients),
+            "host": rooms[room]["hostname"]
             }) 
         if session["userName"] not in clients:
             clients.append(session["userName"])
@@ -253,13 +251,15 @@ def createMeeting():
     setattr(current_user,'joined',True)
     current_user.joined = True
     meetingCount = 0
+    Name = request.form["Name"]
     while meetingCount in rooms:
         meetingCount += 1
     id = int(meetingCount)
     session["meetingId"] = id
-    meetingName = request.form["Name"]
+    session["meetingName"] = Name
     meetingPassword = request.form["Password"]
     rooms[id] = {}
+    rooms[id]["name"] = Name
     rooms[id]["clients"] = [] 
     rooms[id]["password"] = meetingPassword
     session["joined"] = True
@@ -270,7 +270,7 @@ def createMeeting():
 @app.route("/meeting", methods = ['GET'])
 def meeting():
     session["userName"] = current_user.username
-    return render_template("meeting.html", joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
+    return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
 
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():

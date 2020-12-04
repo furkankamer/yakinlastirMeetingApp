@@ -10,6 +10,7 @@ var peerConnections = {};
 var peerConnectionsStreams = {};
 var numberOfCurrentClients = 2;
 var username;
+var hostname;
 var senders = [];
 var connectionsgetscreensenders = {};
 var getscreensenders = [];
@@ -45,6 +46,7 @@ function connectToRoom(){
                     "targets": [0,1,2,3]
                 },
             ],
+            responsive:true,
             "fixedColumns": true,
             "bProcessing": true,
             "deferRender": true,
@@ -63,15 +65,19 @@ function connectToRoom(){
         });
         socket.on('leave', message => alert(message));
         socket.on('receive', message => {
+            var chat = document.getElementById("chat");
             document.getElementById("chat").insertAdjacentHTML("beforeend",
                     `<p>${message}</p>`);
+            chat.scrollTop = chat.scrollHeight - chat.clientHeight;
         });
         socket.on('filereceive', file => {
+            var chat = document.getElementById("chat");
             document.getElementById("chat").insertAdjacentHTML("beforeend",
                     `<p><a style="color: orange;" href ="${file["content"]}" download = "${file["target"].split(".")[0]}">File: ${file["target"]}</a></p>`);
                     document.getElementById("chat").insertAdjacentHTML("beforeend",`
                     <embed src="${file["content"]}" 
                     type="${file["innertype"]}"   height="50" width="220">`);
+            chat.scrollTop = chat.scrollHeight - chat.clientHeight;
         });
         socket.on('hostleft', () => {
             alert("host has closed this meeting");
@@ -91,6 +97,7 @@ function connectToRoom(){
         });
         socket.on('joined', function(data) {
             username = data["username"];
+            hostname = data["host"];
             currentClients = JSON.parse(data["clients"])
             clientId = data["id"];
             isInitiator = false;
@@ -134,13 +141,25 @@ function connectToRoom(){
             video.onloadedmetadata = () =>console.log('gotStream with width and height:',  video.videoWidth, video.videoHeight);
         }
 
+        screen.onclick = () => {
+            if(screen.className == "webcam"){
+                screen.className = "screen";
+                screen.nextElementSibling.className = "webcam";
+            }
+        }
+        screen.nextElementSibling.onclick = () => {
+            if(screen.nextElementSibling.className == "webcam"){
+                screen.nextElementSibling.className = "screen";
+                screen.className = "webcam";
+            }
+        }
+
         videoShareButton.addEventListener('click',() => {
             if(videoShareButton.innerText.includes("Share")){
                 try
                 {
                     stream.getVideoTracks().forEach(t => t.enabled = true);
                     videoShareButton.innerText = "Stop Video";
-                    video.style.display = "block";
                 }
                 catch{
                     alert("An error occured.");
@@ -151,7 +170,6 @@ function connectToRoom(){
                 {
                     stream.getVideoTracks().forEach(t => t.enabled = false);
                     videoShareButton.innerText = "Share Video";
-                    video.style.display = "none";
                 }
                 catch{
                     alert("An error occured.");
@@ -232,18 +250,29 @@ function connectToRoom(){
         function createPeerConnection(isInitiator, config, clientId = null,clientName = null) {
             var peerConn = new RTCPeerConnection(config);
             if(clientId){
+                var videodiv = document.createElement("div");
+                var personName = document.createElement("p");
+                personName.innerText = clientName;
+                videodiv.appendChild(personName);
                 var clientVideo = document.createElement("video");
-                clientVideo.id = String(clientName);
+                clientVideo.onclick = () =>{
+                    screen.className = "webcam";
+                    if(screen.nextElementSibling.style.display == "none")
+                        screen.nextElementSibling.style.display = "block";
+                    screen.nextElementSibling.srcObject = clientVideo.srcObject;
+                }
+                videodiv.appendChild(clientVideo);
+                videodiv.id = String(clientName);
                 clientVideo.autoplay = true;
                 clientVideo.className = "webcam";
                 var emptycell = [...persons.rows[persons.rows.length-1]
                     .cells].find(cell => !cell.children.length);
                 if(emptycell)
-                    emptycell.appendChild(clientVideo)
+                    emptycell.appendChild(videodiv)
                 else{
                     var emptyrow = persons.insertRow();
                     for(let i = 0;i<4;i++){
-                        if(i == 0) emptyrow.insertCell().appendChild(clientVideo);
+                        if(i == 0) emptyrow.insertCell().appendChild(videodiv);
                         else emptyrow.insertCell();
                     }
                 }
@@ -277,14 +306,15 @@ function connectToRoom(){
                 stream.getTracks().forEach(track => peerConn.addTrack(track, stream));
                 peerConn.ontrack = e => {
                     console.warn(e.streams[0].getTracks()[0]);
-                    if(document.getElementById(clientName).srcObject && !Object.values(peerConnectionsStreams).includes(e.streams[0])){
+                    if(!e.streams[0].getAudioTracks().length){
+                        console.warn("screen got");
                         screen.srcObject = e.streams[0];
                         screen.style.display = "block";
                         console.warn("screen shared");
                         return;
                     }
                     peerConnectionsStreams[clientId] = e.streams[0];
-                    document.getElementById(String(clientName)).srcObject = e.streams[0];
+                    document.getElementById(String(clientName)).lastElementChild.srcObject = e.streams[0];
                     for(const[key,value] of Object.entries(peerConnections))
                         if(key != clientId){
                             console.log(key," ",clientId);
@@ -303,24 +333,34 @@ function connectToRoom(){
                 setTimeout(() => stream.getTracks().forEach(track => senders.push(peerConn.addTrack(track, stream))), 1000);
                 peerConn.ontrack = e => {
                     console.warn(e.streams[0]);
-                    if(e.streams[0].type && e.streams[0].getTracks()[0].type == "screen"){
+                    if(!e.streams[0].getAudioTracks().length){
                         screen.srcObject = e.streams[0];
                         screen.style.display = "block";
                         console.warn("screen shared");
                         return;
                     }
                     if(!receivedStreams.includes(e.streams[0])){
+                        var videodiv = document.createElement("div");
+                        var personName = document.createElement("p");
+                        videodiv.appendChild(personName);
                         var clientVideo = document.createElement("video");
+                        videodiv.appendChild(clientVideo);
                         clientVideo.autoplay = true;
                         clientVideo.className = "webcam";
+                        clientVideo.onclick = () =>{
+                            screen.className = "webcam";
+                            if(screen.nextElementSibling.style.display == "none")
+                                screen.nextElementSibling.style.display = "block";
+                            screen.nextElementSibling.srcObject = clientVideo.srcObject;
+                        }
                         var emptycell = [...persons.rows[persons.rows.length-1]
                             .cells].find(cell => !cell.children.length);
                         if(emptycell)
-                            emptycell.appendChild(clientVideo)
+                            emptycell.appendChild(videodiv)
                         else{
                             var emptyrow = persons.insertRow();
                             for(let i = 0;i<4;i++){
-                                if(i == 0) emptyrow.insertCell().appendChild(clientVideo);
+                                if(i == 0) emptyrow.insertCell().appendChild(videodiv);
                                 else emptyrow.insertCell();
                             }
                         }
@@ -328,7 +368,12 @@ function connectToRoom(){
                         receivedStreams.push(e.streams[0]);
                         [...persons.getElementsByTagName("video")]
                             .forEach((vid,ind) => {
-                                if(ind > 0) vid.id = currentClients[ind-1];
+                                if(ind > 0){ 
+                                    vid.parentElement.firstElementChild.innerText = currentClients[ind-1];
+                                    if(currentClients[ind-1] == hostname)
+                                        vid.parentElement.firstElementChild.innerText += " (host)";
+                                    vid.parentElement.id = currentClients[ind-1];
+                                }
                             })
                     }
                 }
