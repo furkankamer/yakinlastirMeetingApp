@@ -44,7 +44,7 @@ csp = {
 }
 url = "dbname='lvzhcnac' user='lvzhcnac' host='hattie.db.elephantsql.com' password='FjnjB28yNrnKOwp_coyq7LABdtIL2iIK'"
 app = Flask(__name__)
-#Talisman(app,content_security_policy = csp,content_security_policy_nonce_in = ['script-src','style-src'])
+Talisman(app,content_security_policy = csp,content_security_policy_nonce_in = ['script-src','style-src'])
 socketio = SocketIO(app,cors_allowed_origins="*",async_mode="eventlet")
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
