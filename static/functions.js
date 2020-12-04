@@ -138,6 +138,7 @@ function connectToRoom(){
             stream.getTracks().forEach(track => track.enabled = false);
             window.stream = stream; // stream available to console
             video.srcObject = stream;
+            video.play();
             video.onloadedmetadata = () =>console.log('gotStream with width and height:',  video.videoWidth, video.videoHeight);
         }
 
@@ -213,6 +214,7 @@ function connectToRoom(){
                                 screenStream = screenstream;
                                 screenStream.getTracks()[0]["type"] = "screen";
                                 screen.srcObject = screenstream;
+                                screen.play();
                                 screen.style.display = "block";
                                 screenShareButton.innerText = "Stop Screen Share";
                                 screenStream.oninactive = () => screenShareButton.click();
@@ -260,6 +262,7 @@ function connectToRoom(){
                     if(screen.nextElementSibling.style.display == "none")
                         screen.nextElementSibling.style.display = "block";
                     screen.nextElementSibling.srcObject = clientVideo.srcObject;
+                    screen.nextElementSibling.play();
                 }
                 videodiv.appendChild(clientVideo);
                 videodiv.id = String(clientName);
@@ -309,12 +312,14 @@ function connectToRoom(){
                     if(!e.streams[0].getAudioTracks().length){
                         console.warn("screen got");
                         screen.srcObject = e.streams[0];
+                        screen.play();
                         screen.style.display = "block";
                         console.warn("screen shared");
                         return;
                     }
                     peerConnectionsStreams[clientId] = e.streams[0];
                     document.getElementById(String(clientName)).lastElementChild.srcObject = e.streams[0];
+                    document.getElementById(String(clientName)).lastElementChild.play();
                     for(const[key,value] of Object.entries(peerConnections))
                         if(key != clientId){
                             console.log(key," ",clientId);
@@ -335,6 +340,7 @@ function connectToRoom(){
                     console.warn(e.streams[0]);
                     if(!e.streams[0].getAudioTracks().length){
                         screen.srcObject = e.streams[0];
+                        screen.play();
                         screen.style.display = "block";
                         console.warn("screen shared");
                         return;
@@ -352,6 +358,7 @@ function connectToRoom(){
                             if(screen.nextElementSibling.style.display == "none")
                                 screen.nextElementSibling.style.display = "block";
                             screen.nextElementSibling.srcObject = clientVideo.srcObject;
+                            screen.nextElementSibling.play();
                         }
                         var emptycell = [...persons.rows[persons.rows.length-1]
                             .cells].find(cell => !cell.children.length);
@@ -365,6 +372,7 @@ function connectToRoom(){
                             }
                         }
                         clientVideo.srcObject = e.streams[0];
+                        clientVideo.play();
                         receivedStreams.push(e.streams[0]);
                         [...persons.getElementsByTagName("video")]
                             .forEach((vid,ind) => {
