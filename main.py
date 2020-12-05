@@ -190,6 +190,7 @@ def joinmeetingPost():
         return redirect("/joinmeeting")
     session["meetingId"] = id
     session["joined"] = True
+    rooms[id]["client"].append(current_user.username)
     return redirect("/meeting")
 
 
@@ -258,6 +259,7 @@ def meeting():
     session["userName"] = current_user.username
     if session["meetingId"] in rooms:
         if session["userName"] in rooms[session["meetingId"]]["clients"] or rooms[session["meetingId"]]["hostname"] == session["userName"]:
+            print("someone joined room")
             return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
     session["joined"] = False
     session["meetingId"] = -1
