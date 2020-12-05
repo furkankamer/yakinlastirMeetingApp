@@ -245,6 +245,7 @@ def createMeeting():
     meetingPassword = request.form["Password"]
     rooms[id] = {}
     rooms[id]["name"] = Name
+    rooms[id]["hostname"] = current_user.username
     rooms[id]["clients"] = [] 
     rooms[id]["password"] = meetingPassword
     session["joined"] = True
