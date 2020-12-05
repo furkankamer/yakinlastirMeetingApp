@@ -482,12 +482,12 @@ function connectToRoom(){
         }
         document.getElementById("leaveBtn").addEventListener('click', () => {
             if(confirm("Are you sure?")){
+                isHostLeft = true;
                 if(!isInitiator){
                     senders.forEach(sender => peerConnectionClient.removeTrack(sender));
                 }
                 socket.emit("leaveMeeting");
                 location.href = "/";
-                isHostLeft = true;
             }
         });
         document.querySelector('.custom-file-input').addEventListener('change', e => {
