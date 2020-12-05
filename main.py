@@ -129,6 +129,7 @@ def leavemeeting():
         session["meetingId"] = -1
         del rooms[room]
         emit('hostleft',room = room,include_self = False)
+        print("host left room")
     return redirect("/meeting")
 
 
