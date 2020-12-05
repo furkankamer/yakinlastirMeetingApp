@@ -62,7 +62,12 @@ function connectToRoom(){
         socket.on('connect', () => socket.emit('joined'));
         socket.on('status', () => {
         });
-        socket.on('leave', message => alert(message));
+        socket.on('leave', message => {
+            $(`
+            <div class="alert alert-danger" role="alert">
+              ${message}
+            </div>`).appendTo("#alertdiv").fadeOut(3000,function(){this.remove});
+        });
         socket.on('receive', message => {
             var chat = document.getElementById("chat");
             document.getElementById("chat").insertAdjacentHTML("beforeend",
@@ -485,6 +490,7 @@ function connectToRoom(){
                 senders.forEach(sender => peerConnectionClient.removeTrack(sender));
             }
             socket.emit("leaveMeeting");
+            return "left";
         }
         document.getElementById("leaveBtn").addEventListener('click', () => {
             if(confirm("Are you sure?")){
