@@ -493,6 +493,7 @@ function connectToRoom(){
                     senders.forEach(sender => peerConnectionClient.removeTrack(sender));
                 }
                 socket.emit("leaveMeeting");
+                location.href = "/";
             }
             return "left";
         }
