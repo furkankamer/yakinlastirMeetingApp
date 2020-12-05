@@ -252,7 +252,9 @@ def meeting():
     session["userName"] = current_user.username
     if session["meetingId"] in rooms:
         return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
-    return render_template("meeting.html",joined = session["joined"])
+    session["joined"] = False
+    session["meetingId"] = -1
+    return render_template("meeting.html",joined = False)
 
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():
