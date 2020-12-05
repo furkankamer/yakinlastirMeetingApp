@@ -190,7 +190,7 @@ def joinmeetingPost():
         return redirect("/joinmeeting")
     session["meetingId"] = id
     session["joined"] = True
-    rooms[id]["client"].append(current_user.username)
+    rooms[id]["clients"].append(current_user.username)
     return redirect("/meeting")
 
 
