@@ -36,23 +36,6 @@ function connectToRoom(){
     var isInitiator;
     $(document).ready(function(){
         grabWebCamVideo();
-        $("#table").dataTable({
-            dom: "<'row'<'col-sm-3'l><'col-sm-3'f><'col-sm-6'p>>" +
-                "<'row'<'col-sm-12'tr>>" +
-                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-            "columnDefs": [
-                {
-                    "orderable": false,
-                    "targets": [0,1,2,3]
-                },
-            ],
-            responsive:true,
-            "fixedColumns": true,
-            "bProcessing": true,
-            "deferRender": true,
-            "iDisplayLength": 2,
-            "aLengthMenu": [[2,5,10, 25, 50, 100, -1], [2,5,10, 25, 50, 100, "All"]]
-        });
         const video = document.querySelector("#videoElement");
         const screen = document.getElementById("videoElementScreen");
         const videoShareButton = document.getElementById("VideoShare");
@@ -67,7 +50,7 @@ function connectToRoom(){
             $(`
             <div class="alert alert-danger" role="alert">
               ${message}
-            </div>`).appendTo("#alertdiv").fadeOut(3000,function(){this.remove});
+            </div>`).appendTo("#alertdiv").fadeOut(10000,function(){this.remove});
         });
         socket.on('receive', message => {
             var chat = document.getElementById("chat");
@@ -491,9 +474,11 @@ function connectToRoom(){
             if(!isInitiator){
                     senders.forEach(sender => peerConnectionClient.removeTrack(sender));
                 }
-            socket.emit("leaveMeeting");
-            location.href = "/";
-            return "left";
+            if(!isHostLeft){
+                socket.emit("leaveMeeting");
+                location.href = "/";
+                return "left";
+            }
         }
         document.getElementById("leaveBtn").addEventListener('click', () => {
             if(confirm("Are you sure?")){
