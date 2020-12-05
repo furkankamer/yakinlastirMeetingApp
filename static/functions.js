@@ -11,6 +11,7 @@ var peerConnectionsStreams = {};
 var numberOfCurrentClients = 2;
 var username;
 var hostname;
+var isHostLeft = false;
 var senders = [];
 var currentSharedScreenStream;
 var connectionsgetscreensenders = {};
@@ -86,6 +87,7 @@ function connectToRoom(){
         socket.on('hostleft', () => {
             alert("host has closed this meeting");
             location.href = "/";
+            isHostLeft = true;
             socket.emit('closedroom');
         })
         socket.on('created', function(data) {
@@ -486,10 +488,12 @@ function connectToRoom(){
             document.querySelector('.custom-file-label').innerText = "Dosya Seç";
         });
         window.onbeforeunload = () => {
-            if(!isInitiator){
-                senders.forEach(sender => peerConnectionClient.removeTrack(sender));
+            if(!isHostLeft){
+                if(!isInitiator){
+                    senders.forEach(sender => peerConnectionClient.removeTrack(sender));
+                }
+                socket.emit("leaveMeeting");
             }
-            socket.emit("leaveMeeting");
             return "left";
         }
         document.getElementById("leaveBtn").addEventListener('click', () => {
