@@ -487,6 +487,7 @@ function connectToRoom(){
                 }
                 socket.emit("leaveMeeting");
                 location.href = "/";
+                isHostLeft = true;
             }
         });
         document.querySelector('.custom-file-input').addEventListener('change', e => {
