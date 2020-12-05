@@ -113,6 +113,8 @@ def leavemeeting():
     leave_room(session["meetingId"])
     if not rooms:
         return
+    if room == -1:
+        return
     elif rooms[room]["host"] != request.sid:
         rooms[room]["clients"].remove(current_user.username)
         session["joined"] = False
