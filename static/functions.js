@@ -68,9 +68,9 @@ function connectToRoom(){
             chat.scrollTop = chat.scrollHeight - chat.clientHeight;
         });
         socket.on('hostleft', () => {
+            isHostLeft = true;
             alert("host has closed this meeting");
             location.href = "/";
-            isHostLeft = true;
             socket.emit('closedroom');
         })
         socket.on('created', function(data) {
