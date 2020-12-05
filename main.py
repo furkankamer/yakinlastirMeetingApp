@@ -25,7 +25,7 @@ lm = LoginManager()
 rooms = {}
 
 
-@app.before_request
+#@app.before_request
 def before_request():
     if not request.is_secure:
         url = request.url.replace('http://', 'https://', 1)
@@ -129,7 +129,6 @@ def leavemeeting():
         session["meetingId"] = -1
         del rooms[room]
         emit('hostleft',room = room,include_self = False)
-        print("host left room")
     return redirect("/meeting")
 
 
@@ -250,6 +249,7 @@ def createMeeting():
 @app.route("/meeting", methods = ['GET'])
 def meeting():
     session["userName"] = current_user.username
+    print("meeting get: " + session["joined"])
     if session["meetingId"] in rooms:
         return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
     return render_template("meeting.html",joined = session["joined"])
