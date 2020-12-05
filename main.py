@@ -252,7 +252,7 @@ def createMeeting():
 @app.route("/meeting", methods = ['GET'])
 def meeting():
     session["userName"] = current_user.username
-    if session["meetingId"] in rooms:
+    if session["meetingId"] != -1:
         return render_template("meeting.html",meetingName = rooms[session["meetingId"]]["name"], joined = session["joined"], meetingId = session["meetingId"], user = current_user.username)
     session["joined"] = False
     session["meetingId"] = -1
