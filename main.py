@@ -112,8 +112,10 @@ def leavemeeting():
     room = session['meetingId']
     leave_room(session["meetingId"])
     if not rooms:
+        print("cannot leave room")
         return
     if room == -1:
+        print("cannot leave room")
         return
     elif rooms[room]["host"] != request.sid:
         rooms[room]["clients"].remove(current_user.username)
@@ -126,12 +128,13 @@ def leavemeeting():
             clients.append(client) 
         clients.insert(0,rooms[room]["hostname"])
         emit('clientsUpdate',json.dumps(clients),room = room)
+        print("left room as client")
     else:
         session["joined"] = False
         session["meetingId"] = -1
         del rooms[room]
         emit('hostleft',room = room,include_self = False)
-        print(session["joined"])
+        print("left room as host")
     return redirect("/meeting")
 
 
