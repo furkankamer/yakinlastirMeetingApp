@@ -253,7 +253,7 @@ def createMeeting():
     meetingCount += 1
     return redirect("/meeting")
 
-
+@login_required
 @app.route("/meeting", methods = ['GET'])
 def meeting():
     session["userName"] = current_user.username
@@ -265,12 +265,14 @@ def meeting():
     session["meetingId"] = -1
     return render_template("meeting.html",joined = False)
 
+@login_required
 @app.route("/newmeeting",methods = ['GET'])
 def newMeeting():
     session["joined"] = False
     session["meetingId"] = -1
     return render_template("newmeeting.html", joined = session["joined"])
-
+    
+@login_required
 @app.route("/joinmeeting",methods = ['GET'])
 def joinMeeting():
     session["joined"] = False
